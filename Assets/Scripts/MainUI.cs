@@ -10,6 +10,7 @@ public class MainUI : Singleton<MainUI>
 
     private void Start()
     {
+        TennisMatchManager.Instance.GetCurrentScore();
         UpdateScores();
     }
 

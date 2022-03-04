@@ -16,6 +16,7 @@ public class TennisBall : MonoBehaviour
     private float lastHitXDirection;
     private Vector3 directionToMove;
     private bool curveBall;
+    private float xCurveMultiplier;
     private float xCurve;
     public float XCurve {
         get 
@@ -41,16 +42,17 @@ public class TennisBall : MonoBehaviour
         }
         else
         {
-
             if (curveBall)
             {
+                xCurveMultiplier += Time.deltaTime;
+
                 if (lastHitXDirection > 0)
                 {
-                    xCurve += Time.deltaTime / 2;
+                    xCurve += Time.deltaTime * xCurveMultiplier;
                 }
                 else if (lastHitXDirection < 0)
                 {
-                    xCurve -= Time.deltaTime / 2;
+                    xCurve -= Time.deltaTime * xCurveMultiplier;
                 }
             }
             rigidbody.velocity = (directionToMove + new Vector3(lastHitXDirection + xCurve, 0, 0)) * speed;
@@ -66,6 +68,7 @@ public class TennisBall : MonoBehaviour
         trail.emitting = true;
         curveBall = false;
         xCurve = 0;
+        xCurveMultiplier = 0;
         lastHitBy = hitBy;
         lastHitXDirection = 0;
         displayBallAnimator.Play("Normal Hit", 0, 0.2f);

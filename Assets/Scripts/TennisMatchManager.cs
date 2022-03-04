@@ -56,8 +56,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
             team2CurrentScore = 3;
         }
 
-        team1CurrentScoreString = GetScoreString(team1CurrentScore) + "-";
-        team2CurrentScoreString = GetScoreString(team2CurrentScore);
+        GetCurrentScore();
 
         if (team1CurrentScore == 3 && team2CurrentScore == 3)
         {
@@ -66,6 +65,12 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
         }
 
         MainUI.Instance.UpdateScores();
+    }
+
+    public void GetCurrentScore()
+    {
+        team1CurrentScoreString = GetScoreString(team1CurrentScore) + "-";
+        team2CurrentScoreString = GetScoreString(team2CurrentScore);
     }
 
     string GetScoreString(int score)

@@ -18,6 +18,7 @@ public class BallHitter : MonoBehaviour
             canHitTimer -= Time.deltaTime;
             if (canHitTimer <= 0)
             {
+                playerController.UnReady();
                 gameObject.SetActive(false);
             }
         }
@@ -26,8 +27,9 @@ public class BallHitter : MonoBehaviour
     public void TurnOnHitter(HitType hitType = HitType.Normal)
     {
         gameObject.SetActive(true);
-        canHitTimer = 0.5f;
+        canHitTimer = 0.8f;
         currentHitType = hitType;
+        playerController.ReadyToHitBall();
 
         switch (hitType)
         {
@@ -48,6 +50,7 @@ public class BallHitter : MonoBehaviour
         if (other.CompareTag("Ball"))
         {
             other.GetComponent<TennisBall>().HitBall(belongsToPlayer, currentHitType, hitPower + playerController.chargePower);
+            playerController.HitBall();
         }
     }
 }
