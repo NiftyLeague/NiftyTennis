@@ -8,10 +8,10 @@ public class TennisBall : MonoBehaviour
     public Rigidbody rigidbody;
     public Transform displayBall;
     public HitBy lastHitBy = HitBy.Opponent;
+    public BallState ballState = BallState.Held;
     public TrailRenderer trail;
     public GameObject hitParticlePrefab;
     public float speed;
-    private bool beingHeld;
     private Transform holdFollow;
     private float lastHitXDirection;
     private Vector3 directionToMove;
@@ -36,26 +36,30 @@ public class TennisBall : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (beingHeld)
+        switch (ballState)
         {
-            transform.position = holdFollow.position;
-        }
-        else
-        {
-            if (curveBall)
-            {
-                xCurveMultiplier += Time.deltaTime;
+            case BallState.Ground:
+                rigidbody.velocity = Vector3.zero;
+                break;
+            case BallState.Held:
+                transform.position = holdFollow.position;
+                break;
+            case BallState.Moving:
+                if (curveBall)
+                {
+                    xCurveMultiplier += Time.deltaTime;
 
-                if (lastHitXDirection > 0)
-                {
-                    xCurve += Time.deltaTime * xCurveMultiplier;
+                    if (lastHitXDirection > 0)
+                    {
+                        xCurve += Time.deltaTime * xCurveMultiplier;
+                    }
+                    else if (lastHitXDirection < 0)
+                    {
+                        xCurve -= Time.deltaTime * xCurveMultiplier;
+                    }
                 }
-                else if (lastHitXDirection < 0)
-                {
-                    xCurve -= Time.deltaTime * xCurveMultiplier;
-                }
-            }
-            rigidbody.velocity = (directionToMove + new Vector3(lastHitXDirection + xCurve, 0, 0)) * speed;
+                rigidbody.velocity = (directionToMove + new Vector3(lastHitXDirection + xCurve, 0, 0)) * speed;
+                break;
         }
     }
 
@@ -63,7 +67,7 @@ public class TennisBall : MonoBehaviour
     {
         transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
         holdFollow = null;
-        beingHeld = false;
+        ballState = BallState.Moving;
         TennisMatchManager.Instance.ballBouncedOnCourt = false;
         trail.emitting = true;
         curveBall = false;
@@ -84,6 +88,10 @@ public class TennisBall : MonoBehaviour
                 directionToMove = transform.forward;
                 break;
             case HitBy.Opponent:
+                if (hitType != HitType.None)
+                {
+                    lastHitXDirection = -Input.GetAxis("Horizontal") / 2;
+                }
                 directionToMove = -transform.forward;
                 break;
         }
@@ -100,12 +108,10 @@ public class TennisBall : MonoBehaviour
                 break;
             case HitType.Hard:
                 ballTrailColor = Color.red;
-                //displayBallAnimator.speed = 0.5f;
                 break;
             case HitType.Weak:
                 ballTrailColor = Color.blue;
                 hitPower = 0.75f;
-                //displayBallAnimator.speed = 2.0f;
                 curveBall = true;
                 break;
         }
@@ -121,11 +127,20 @@ public class TennisBall : MonoBehaviour
     public void ResetBall(PlayerID serving)
     {
         displayBallAnimator.speed = 2.0f;
+        displayBallAnimator.Play("Normal Bounce", 0, 0);
         rigidbody.velocity = Vector3.zero;
         trail.emitting = false;
         lastHitXDirection = 0;
-        beingHeld = true;
+        ballState = BallState.Held;
         holdFollow = TennisMatchManager.Instance.GetPlayer(serving).ballServePosition;
+    }
+
+    public void DeadBall()
+    {
+        rigidbody.velocity = Vector3.zero;
+        trail.emitting = false;
+        ballState = BallState.Ground;
+        displayBallAnimator.Play("Ground", 0, 0);
     }
 
     public void BallBounce()
@@ -146,4 +161,11 @@ public enum HitType
     Normal,
     Hard,
     Weak,
+}
+
+public enum BallState
+{
+    Ground,
+    Held,
+    Moving,
 }

@@ -24,29 +24,37 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 if (ballBouncedOnCourt)
                 {
                     team1CurrentScore++;
+                    MainUI.Instance.PlayDisplayMessage("Team 1 Scores!", Color.cyan);
+                }
+                else
+                {
+                    MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce!", Color.white);
                 }
                 if (team1CurrentScore > 3 && team2CurrentScore < 3)
                 {
                     team1MainScore++;
+                    MainUI.Instance.PlayDisplayMessage("Game, Set, Match: Team 1!", Color.yellow);
                     team1CurrentScore = 0;
                     team2CurrentScore = 0;
                 }
-                tennisBall.ResetBall(PlayerID.Player1);
-                //tennisBall.HitBall(HitBy.Opponent);
                 break;
             case TeamID.team2:
                 if (ballBouncedOnCourt)
                 {
                     team2CurrentScore++;
+                    MainUI.Instance.PlayDisplayMessage("Team 2 Scores!", Color.cyan);
+                }
+                else
+                {
+                    MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce!", Color.white);
                 }
                 if (team2CurrentScore > 3 && team1CurrentScore < 3)
                 {
                     team2MainScore++;
+                    MainUI.Instance.PlayDisplayMessage("Game, Set, Match: Team 2!", Color.yellow);
                     team1CurrentScore = 0;
                     team2CurrentScore = 0;
                 }
-                tennisBall.ResetBall(PlayerID.Player1);
-                //tennisBall.HitBall(HitBy.Player);
                 break;
         }
 
@@ -62,9 +70,13 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
         {
             team1CurrentScoreString = "Deuce";
             team2CurrentScoreString = "";
+
+            MainUI.Instance.PlayDisplayMessage("DEUCE!", Color.red);
         }
 
+        tennisBall.DeadBall();
         MainUI.Instance.UpdateScores();
+        StartCoroutine(NextRoundStarting(teamID));
     }
 
     public void GetCurrentScore()
@@ -109,6 +121,25 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
         }
 
         return playerControllerToGet;
+    }
+
+    public IEnumerator NextRoundStarting(TeamID nextServe)
+    {
+        yield return new WaitForSeconds(2);
+        PlayerID playerToServeNext = PlayerID.Player1;
+        switch (nextServe)
+        {
+            case TeamID.team1:
+                playerToServeNext = PlayerID.Player1;
+                MainUI.Instance.PlayDisplayMessage("Team 1 Serves!", Color.green);
+                break;
+            case TeamID.team2:
+                playerToServeNext = PlayerID.Player2;
+                MainUI.Instance.PlayDisplayMessage("Team 2 Serves!", Color.green);
+                break;
+        }
+        tennisBall.ResetBall(playerToServeNext);
+        GetPlayer(playerToServeNext).SetState(PlayState.Serving);
     }
 }
 
