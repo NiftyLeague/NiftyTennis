@@ -63,7 +63,7 @@ public class TennisBall : MonoBehaviour
         }
     }
 
-    public void HitBall(HitBy hitBy, HitType hitType = HitType.None, float hitPower = 1)
+    public void HitBall(HitBy hitBy, HitType hitType = HitType.Serving, float hitPower = 1)
     {
         transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
         holdFollow = null;
@@ -77,18 +77,31 @@ public class TennisBall : MonoBehaviour
         lastHitXDirection = 0;
         displayBallAnimator.Play("Normal Hit", 0, 0.2f);
         displayBallAnimator.speed = 1.0f;
+        float servingBonusDirection = 0.4f;
 
         switch (hitBy)
         {
             case HitBy.Player:
-                if (hitType != HitType.None)
+                if (hitType == HitType.Serving)
+                {
+                    lastHitXDirection = (Input.GetAxis("Horizontal") + servingBonusDirection) / 2;
+                    lastHitXDirection = TennisMatchManager.Instance.leftSideServe ? lastHitXDirection : -lastHitXDirection;
+                    Debug.Log(TennisMatchManager.Instance.leftSideServe + " | SERVING SHOT DIRECTION: " + lastHitXDirection);
+                }
+                else
                 {
                     lastHitXDirection = Input.GetAxis("Horizontal") / 2;
                 }
                 directionToMove = transform.forward;
                 break;
             case HitBy.Opponent:
-                if (hitType != HitType.None)
+                if (hitType == HitType.Serving)
+                {
+                    lastHitXDirection = (Input.GetAxis("Horizontal") + servingBonusDirection) / 2;
+                    lastHitXDirection = TennisMatchManager.Instance.leftSideServe ? lastHitXDirection : -lastHitXDirection;
+                    Debug.Log(TennisMatchManager.Instance.leftSideServe + " | SERVING SHOT DIRECTION: " + lastHitXDirection);
+                }
+                else
                 {
                     lastHitXDirection = -Input.GetAxis("Horizontal") / 2;
                 }
@@ -100,8 +113,9 @@ public class TennisBall : MonoBehaviour
 
         switch (hitType)
         {
-            case HitType.None:
-                trail.emitting = false;
+            case HitType.Serving:
+                hitPower = 1.5f;
+                ballTrailColor = Color.yellow;
                 break;
             case HitType.Normal:
                 ballTrailColor = Color.yellow;
@@ -157,7 +171,7 @@ public enum HitBy
 
 public enum HitType
 {
-    None,
+    Serving,
     Normal,
     Hard,
     Weak,

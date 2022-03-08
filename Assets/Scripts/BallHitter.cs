@@ -26,6 +26,11 @@ public class BallHitter : MonoBehaviour
 
     public void TurnOnHitter(HitType hitType = HitType.Normal)
     {
+        if (playerController.playState == PlayState.Serving)
+        {
+            hitType = HitType.Serving;
+        }
+
         gameObject.SetActive(true);
         canHitTimer = 0.8f;
         currentHitType = hitType;
@@ -33,6 +38,7 @@ public class BallHitter : MonoBehaviour
 
         switch (hitType)
         {
+            case HitType.Serving:
             case HitType.Normal:
                 renderer.material.color = Color.white;
                 break;

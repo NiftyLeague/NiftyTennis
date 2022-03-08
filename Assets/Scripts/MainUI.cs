@@ -9,6 +9,7 @@ public class MainUI : Singleton<MainUI>
     public TextMeshProUGUI mainScoreText;
     public TextMeshProUGUI displayMessageText;
     public GameObject displayMessage;
+    public ServingBarUI servingBar;
 
     private void Start()
     {
@@ -17,6 +18,7 @@ public class MainUI : Singleton<MainUI>
 
         //Start Match
         TennisMatchManager.Instance.GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+        TennisMatchManager.Instance.GetPlayer(PlayerID.Player2).SetState(PlayState.OpposingServe);
         PlayDisplayMessage("Team 1 Serves!", Color.green);
     }
 

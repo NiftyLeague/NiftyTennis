@@ -15,7 +15,7 @@ public class PlayerController : MonoBehaviour
     public float chargePower = 0;
     public ParticleSystem chargeParticle;
     public Transform ballServePosition;
-    public Transform playerServeStartPosition;
+    public ServingPosition playerServeStartPosition;
     [Space]
     public SpriteRenderer spriteRenderer;
     public Sprite standingSprite;
@@ -194,10 +194,15 @@ public class PlayerController : MonoBehaviour
         {
             case PlayState.Playing:
                 playerServeStartPosition.gameObject.SetActive(false);
+                MainUI.Instance.servingBar.gameObject.SetActive(false);
                 break;
             case PlayState.Serving:
-                playerServeStartPosition.gameObject.SetActive(true);
-                transform.position = playerServeStartPosition.position;
+                playerServeStartPosition.SetServingPosition();
+                transform.position = playerServeStartPosition.GetStartPosition(false).position;
+                MainUI.Instance.servingBar.UpdateBar(transform);
+                break;
+            case PlayState.OpposingServe:
+                transform.position = playerServeStartPosition.GetStartPosition(true).position;
                 break;
         }
 
@@ -209,4 +214,5 @@ public enum PlayState
 {
     Playing,
     Serving,
+    OpposingServe,
 }

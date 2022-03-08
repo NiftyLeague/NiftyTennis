@@ -14,7 +14,9 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     public List<PlayerController> players;
     [Space]
     public TennisBall tennisBall;
-    public bool ballBouncedOnCourt = false;
+    [HideInInspector] public bool ballBouncedOnCourt = false;
+    [HideInInspector] public bool leftSideServe = true;
+    [HideInInspector] public TeamID servingTeam = TeamID.team1;
 
     public void Score(TeamID teamID)
     {
@@ -33,6 +35,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 if (team1CurrentScore > 3 && team2CurrentScore < 3)
                 {
                     team1MainScore++;
+                    ChangeServingTeam();
                     MainUI.Instance.PlayDisplayMessage("Game, Set, Match: Team 1!", Color.yellow);
                     team1CurrentScore = 0;
                     team2CurrentScore = 0;
@@ -51,6 +54,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 if (team2CurrentScore > 3 && team1CurrentScore < 3)
                 {
                     team2MainScore++;
+                    ChangeServingTeam();
                     MainUI.Instance.PlayDisplayMessage("Game, Set, Match: Team 2!", Color.yellow);
                     team1CurrentScore = 0;
                     team2CurrentScore = 0;
@@ -76,7 +80,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
 
         tennisBall.DeadBall();
         MainUI.Instance.UpdateScores();
-        StartCoroutine(NextRoundStarting(teamID));
+        StartCoroutine(NextRoundStarting());
     }
 
     public void GetCurrentScore()
@@ -123,23 +127,40 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
         return playerControllerToGet;
     }
 
-    public IEnumerator NextRoundStarting(TeamID nextServe)
+    void ChangeServingTeam()
+    {
+        switch (servingTeam)
+        {
+            case TeamID.team1:
+                servingTeam = TeamID.team2;
+                break;
+            case TeamID.team2:
+                servingTeam = TeamID.team1;
+                break;
+        }
+    }
+
+    public IEnumerator NextRoundStarting()
     {
         yield return new WaitForSeconds(2);
         PlayerID playerToServeNext = PlayerID.Player1;
-        switch (nextServe)
+        PlayerID playerToOpposeServe = PlayerID.Player2;
+        switch (servingTeam)
         {
             case TeamID.team1:
                 playerToServeNext = PlayerID.Player1;
+                playerToOpposeServe = PlayerID.Player2;
                 MainUI.Instance.PlayDisplayMessage("Team 1 Serves!", Color.green);
                 break;
             case TeamID.team2:
                 playerToServeNext = PlayerID.Player2;
+                playerToOpposeServe = PlayerID.Player1;
                 MainUI.Instance.PlayDisplayMessage("Team 2 Serves!", Color.green);
                 break;
         }
         tennisBall.ResetBall(playerToServeNext);
         GetPlayer(playerToServeNext).SetState(PlayState.Serving);
+        GetPlayer(playerToOpposeServe).SetState(PlayState.OpposingServe);
     }
 }
 
