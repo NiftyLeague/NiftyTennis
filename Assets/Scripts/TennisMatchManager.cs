@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class TennisMatchManager : Singleton<TennisMatchManager>
 {
@@ -17,6 +18,11 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     [HideInInspector] public bool ballBouncedOnCourt = false;
     [HideInInspector] public bool leftSideServe = true;
     [HideInInspector] public TeamID servingTeam = TeamID.team1;
+    [Space]
+    public List<CourtStage> courts;
+    public Renderer courtRenderer;
+    public float ballSpeedModifier = 1;
+    public float playerSpeedModifier = 1;
 
     public void Score(TeamID teamID)
     {
@@ -162,6 +168,18 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
         GetPlayer(playerToServeNext).SetState(PlayState.Serving);
         GetPlayer(playerToOpposeServe).SetState(PlayState.OpposingServe);
     }
+
+    public void SetCourt(int courtID)
+    {
+        courtRenderer.material = courts[courtID].tennisCourtMaterial;
+        ballSpeedModifier = courts[courtID].ballSpeedModifier;
+        playerSpeedModifier = courts[courtID].playerSpeedModifier;
+
+        if (MainUI.Instance.settingsMenu.activeInHierarchy)
+        {
+            MainUI.Instance.SettingsMenu();
+        }
+    }
 }
 
 public enum TeamID
@@ -176,4 +194,13 @@ public enum PlayerID
     Player2,
     Player3,
     Player4,
+}
+
+[Serializable]
+public class CourtStage
+{
+    public string courtName;
+    public Material tennisCourtMaterial;
+    public float ballSpeedModifier = 1;
+    public float playerSpeedModifier = 1;
 }

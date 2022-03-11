@@ -65,6 +65,7 @@ public class TennisBall : MonoBehaviour
 
     public void HitBall(HitBy hitBy, HitType hitType = HitType.Serving, float hitPower = 1)
     {
+        Utilities.Instance.PlayHitStop();
         transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
         holdFollow = null;
         ballState = BallState.Moving;
@@ -76,7 +77,7 @@ public class TennisBall : MonoBehaviour
         lastHitBy = hitBy;
         lastHitXDirection = 0;
         displayBallAnimator.Play("Normal Hit", 0, 0.2f);
-        displayBallAnimator.speed = 1.0f;
+        displayBallAnimator.speed = TennisMatchManager.Instance.ballSpeedModifier;
         float servingBonusDirection = 0.4f;
 
         switch (hitBy)
@@ -132,15 +133,14 @@ public class TennisBall : MonoBehaviour
 
         trail.startColor = ballTrailColor;
         trail.endColor = ballTrailColor;
-        speed = 5 * hitPower;
-        
+        speed = (5 * hitPower) * TennisMatchManager.Instance.ballSpeedModifier;
 
         Instantiate(hitParticlePrefab, transform.position, transform.rotation);
     }
 
     public void ResetBall(PlayerID serving)
     {
-        displayBallAnimator.speed = 2.0f;
+        displayBallAnimator.speed = TennisMatchManager.Instance.ballSpeedModifier * 2;
         displayBallAnimator.Play("Normal Bounce", 0, 0);
         rigidbody.velocity = Vector3.zero;
         trail.emitting = false;

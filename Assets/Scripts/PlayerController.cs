@@ -54,19 +54,22 @@ public class PlayerController : MonoBehaviour
             movement = new Vector3(-input.x, 0.0f, -input.y);
             spriteRenderer.flipX = Input.GetAxis("Horizontal") > 0 ? true : false;
         }
+
+        float moveSpeedWithModifier = moveSpeed * TennisMatchManager.Instance.playerSpeedModifier;
+
         if (dashTimer > 0)
         {
-            rigidBody.velocity = movement * (moveSpeed * moveSpeedMultiplier) * dashPower;
+            rigidBody.velocity = movement * (moveSpeedWithModifier * moveSpeedMultiplier) * dashPower;
             dashTimer -= Time.deltaTime;
         }
         else
         {
-            rigidBody.velocity = movement * (moveSpeed * moveSpeedMultiplier);
+            rigidBody.velocity = movement * (moveSpeedWithModifier * moveSpeedMultiplier);
         }
 
         if (isHittingBall)
         {
-            spriteAnimationTimer -= Time.deltaTime;
+            spriteAnimationTimer -= Time.deltaTime * TennisMatchManager.Instance.playerSpeedModifier;
 
             if (spriteAnimationTimer <= 0)
             {
@@ -87,7 +90,7 @@ public class PlayerController : MonoBehaviour
 
         if (isAboutToHitBall)
         {
-            spriteAnimationTimer -= Time.deltaTime;
+            spriteAnimationTimer -= Time.deltaTime * TennisMatchManager.Instance.playerSpeedModifier;
 
             if (spriteAnimationTimer <= 0)
             {
@@ -105,7 +108,7 @@ public class PlayerController : MonoBehaviour
 
         if (magnitude > 0 || magnitude < 0)
         {
-            spriteAnimationTimer -= Time.deltaTime;
+            spriteAnimationTimer -= Time.deltaTime * TennisMatchManager.Instance.playerSpeedModifier;
 
             if (spriteAnimationTimer <= 0)
             {

@@ -5,6 +5,8 @@ using TMPro;
 
 public class MainUI : Singleton<MainUI>
 {
+    public GameObject settingsMenu;
+    [Space]
     public TextMeshProUGUI currentScoreText;
     public TextMeshProUGUI mainScoreText;
     public TextMeshProUGUI displayMessageText;
@@ -20,14 +22,35 @@ public class MainUI : Singleton<MainUI>
         TennisMatchManager.Instance.GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
         TennisMatchManager.Instance.GetPlayer(PlayerID.Player2).SetState(PlayState.OpposingServe);
         PlayDisplayMessage("Team 1 Serves!", Color.green);
+
+        SettingsMenu();
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            Application.Quit();
+            SettingsMenu();
         }
+    }
+
+    public void SettingsMenu()
+    {
+        settingsMenu.SetActive(!settingsMenu.activeInHierarchy);
+
+        if (settingsMenu.activeInHierarchy)
+        {
+            Time.timeScale = 0;
+        }
+        else
+        {
+            Time.timeScale = 1;
+        }
+    }
+
+    public void QuitButton()
+    {
+        Application.Quit();
     }
 
     public void UpdateScores()
