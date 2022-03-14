@@ -15,37 +15,35 @@ public class MainUI : Singleton<MainUI>
 
     private void Start()
     {
-        TennisMatchManager.Instance.GetCurrentScore();
-        UpdateScores();
-
-        //Start Match
-        TennisMatchManager.Instance.GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
-        TennisMatchManager.Instance.GetPlayer(PlayerID.Player2).SetState(PlayState.OpposingServe);
-        PlayDisplayMessage("Team 1 Serves!", Color.green);
-
-        SettingsMenu();
+        OpenSettingsMenu();
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            SettingsMenu();
+            OpenSettingsMenu();
         }
     }
 
-    public void SettingsMenu()
+    public void OpenSettingsMenu()
     {
-        settingsMenu.SetActive(!settingsMenu.activeInHierarchy);
+        settingsMenu.SetActive(true);
+        Time.timeScale = 0;
+    }
 
-        if (settingsMenu.activeInHierarchy)
-        {
-            Time.timeScale = 0;
-        }
-        else
-        {
-            Time.timeScale = 1;
-        }
+    public void CloseSettingsMenu()
+    {
+        settingsMenu.SetActive(false);
+        Time.timeScale = 1;
+    }
+
+    public void StartNewGame()
+    {
+        TennisMatchManager.Instance.ResetScores();
+        UpdateScores();
+        PlayDisplayMessage("Team 1 Serves!", Color.green);
+        CloseSettingsMenu();
     }
 
     public void QuitButton()

@@ -14,7 +14,6 @@ public class ServingBarUI : MonoBehaviour
     {
         transform.position = playerAssignedTo.position + positionOffset;
         float currentServeBallPosition = ball.transform.GetChild(0).position.y / 1.35f;
-        Debug.Log(currentServeBallPosition);
         serveBar.fillAmount = currentServeBallPosition / 1;
         if (serveBar.fillAmount > 0.9)
         {

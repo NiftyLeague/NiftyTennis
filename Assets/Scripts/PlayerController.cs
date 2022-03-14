@@ -11,6 +11,9 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
     private float moveSpeedMultiplier = 1;
     private float dashTimer;
+    private float dashCooldown;
+    private float dashKeypressTimer;
+    private LastDashKeyPressed lastDashKeyPressed = LastDashKeyPressed.None;
     public float dashPower = 4;
     public float chargePower = 0;
     public ParticleSystem chargeParticle;
@@ -28,6 +31,7 @@ public class PlayerController : MonoBehaviour
     private int spriteAboutToHitBallAnimationCurrent = -1;
     [HideInInspector] public bool isHittingBall;
     [HideInInspector] public bool isAboutToHitBall;
+    public bool secondPlayerInTeam;
 
     void FixedUpdate()
     {
@@ -44,16 +48,8 @@ public class PlayerController : MonoBehaviour
         magnitude = Mathf.Clamp01(magnitude);
         input = normal * magnitude;
         Vector3 movement = Vector3.zero;
-        if (playerID == PlayerID.Player1)
-        {
-            movement = new Vector3(input.x, 0.0f, input.y);
-            spriteRenderer.flipX = Input.GetAxis("Horizontal") > 0 ? false : true;
-        }
-        else if (playerID == PlayerID.Player2)
-        {
-            movement = new Vector3(-input.x, 0.0f, -input.y);
-            spriteRenderer.flipX = Input.GetAxis("Horizontal") > 0 ? true : false;
-        }
+        movement = new Vector3(input.x, 0.0f, input.y);
+        spriteRenderer.flipX = Input.GetAxis("Horizontal") > 0 ? false : true;
 
         float moveSpeedWithModifier = moveSpeed * TennisMatchManager.Instance.playerSpeedModifier;
 
@@ -131,31 +127,54 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        //INPUT
-        if (Input.GetKeyDown(KeyCode.Z))
+        dashCooldown -= Time.deltaTime;
+        dashKeypressTimer -= Time.deltaTime;
+
+        if (dashKeypressTimer < 0)
         {
-            if (dashTimer <= 0)
-            {
-                dashTimer = 0.15f;
-            }
+            lastDashKeyPressed = LastDashKeyPressed.None;
         }
 
-        if (Input.GetKeyDown(KeyCode.A))
+        // DASH INPUTS
+        if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            ballHitter.TurnOnHitter();
-            chargePower = 0;
+            DashAttempt(LastDashKeyPressed.Up);
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            DashAttempt(LastDashKeyPressed.Down);
+        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            DashAttempt(LastDashKeyPressed.Left);
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            DashAttempt(LastDashKeyPressed.Right);
         }
 
+        // BALL HIT INPUTS
         if (Input.GetKeyDown(KeyCode.X))
         {
             ballHitter.TurnOnHitter(HitType.Weak);
             chargePower = -0.8f;
         }
 
-        if (Input.GetKey(KeyCode.S))
+        var chargeParticleEmission = chargeParticle.emission;
+
+        if (Input.GetKey(KeyCode.Z))
         {
-            ballHitter.TurnOnHitter(HitType.Hard);
             chargePower += Time.deltaTime;
+            if (chargePower > 0.25f)
+            {
+                ballHitter.TurnOnHitter(HitType.Hard);
+                chargeParticleEmission.rateOverTime = chargePower * 500;
+            }
+            else
+            {
+                ballHitter.TurnOnHitter();
+            }
+
             if (chargePower > 1.0f)
             {
                 chargePower = 1.0f;
@@ -164,10 +183,35 @@ public class PlayerController : MonoBehaviour
         else
         {
             chargePower = 0;
+            chargeParticleEmission.rateOverTime = 0;
         }
+        
+    }
 
-        var chargeParticleEmission = chargeParticle.emission;
-        chargeParticleEmission.rateOverTime = chargePower * 500;
+    public void DashAttempt(LastDashKeyPressed keyPress)
+    {
+        if (lastDashKeyPressed == keyPress)
+        {
+            Dash();
+            return;
+        }
+        else
+        {
+            lastDashKeyPressed = keyPress;
+            dashKeypressTimer = 0.5f;
+        }
+    }
+
+    public void Dash()
+    {
+        if (dashCooldown > 0)
+        {
+            return;
+        }
+        lastDashKeyPressed = LastDashKeyPressed.None;
+        dashCooldown = 0.75f;
+        dashTimer = 0.15f;
+        dashKeypressTimer = 0;
     }
 
     public void HitBall()
@@ -203,8 +247,19 @@ public class PlayerController : MonoBehaviour
                 playerServeStartPosition.SetServingPosition();
                 transform.position = playerServeStartPosition.GetStartPosition(false).position;
                 MainUI.Instance.servingBar.UpdateBar(transform);
+                TennisMatchManager.Instance.tennisBall.ResetBall(playerID);
                 break;
             case PlayState.OpposingServe:
+                if (secondPlayerInTeam)
+                {
+                    transform.position = playerServeStartPosition.GetStartPosition(false).position;
+                }
+                else
+                {
+                    transform.position = playerServeStartPosition.GetStartPosition(true).position;
+                }
+                break;
+            case PlayState.SameTeamAsServe:
                 transform.position = playerServeStartPosition.GetStartPosition(true).position;
                 break;
         }
@@ -217,5 +272,15 @@ public enum PlayState
 {
     Playing,
     Serving,
+    SameTeamAsServe,
     OpposingServe,
+}
+
+public enum LastDashKeyPressed
+{
+    None,
+    Up,
+    Down,
+    Left,
+    Right,
 }

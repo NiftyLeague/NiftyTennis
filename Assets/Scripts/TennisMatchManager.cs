@@ -13,6 +13,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     public string team2CurrentScoreString = "0";
     [Space]
     public List<PlayerController> players;
+    [HideInInspector] public GameTypeID currentGameType = GameTypeID.Normal;
     [Space]
     public TennisBall tennisBall;
     [HideInInspector] public bool ballBouncedOnCourt = false;
@@ -23,6 +24,9 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     public Renderer courtRenderer;
     public float ballSpeedModifier = 1;
     public float playerSpeedModifier = 1;
+    [Space]
+    public float lethalModeSpeedModifier = 1;
+    [HideInInspector] public float totalBallSpeedModifier = 1; 
 
     public void Score(TeamID teamID)
     {
@@ -84,6 +88,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
             MainUI.Instance.PlayDisplayMessage("DEUCE!", Color.red);
         }
 
+        ResetLethalSpeed();
         tennisBall.DeadBall();
         MainUI.Instance.UpdateScores();
         StartCoroutine(NextRoundStarting());
@@ -93,6 +98,15 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     {
         team1CurrentScoreString = GetScoreString(team1CurrentScore) + "-";
         team2CurrentScoreString = GetScoreString(team2CurrentScore);
+    }
+
+    public void ResetScores()
+    {
+        team1MainScore = 0;
+        team2MainScore = 0;
+        team1CurrentScore = 0;
+        team2CurrentScore = 0;
+        GetCurrentScore();
     }
 
     string GetScoreString(int score)
@@ -149,24 +163,79 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     public IEnumerator NextRoundStarting()
     {
         yield return new WaitForSeconds(2);
-        PlayerID playerToServeNext = PlayerID.Player1;
-        PlayerID playerToOpposeServe = PlayerID.Player2;
         switch (servingTeam)
         {
             case TeamID.team1:
-                playerToServeNext = PlayerID.Player1;
-                playerToOpposeServe = PlayerID.Player2;
+                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
+                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
+                tennisBall.ResetBall(PlayerID.Player1);
                 MainUI.Instance.PlayDisplayMessage("Team 1 Serves!", Color.green);
                 break;
             case TeamID.team2:
-                playerToServeNext = PlayerID.Player2;
-                playerToOpposeServe = PlayerID.Player1;
+                GetPlayer(PlayerID.Player1).SetState(PlayState.OpposingServe);
+                GetPlayer(PlayerID.Player2).SetState(PlayState.OpposingServe);
+                GetPlayer(PlayerID.Player3).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player4).SetState(PlayState.SameTeamAsServe);
+                tennisBall.ResetBall(PlayerID.Player3);
                 MainUI.Instance.PlayDisplayMessage("Team 2 Serves!", Color.green);
                 break;
         }
-        tennisBall.ResetBall(playerToServeNext);
-        GetPlayer(playerToServeNext).SetState(PlayState.Serving);
-        GetPlayer(playerToOpposeServe).SetState(PlayState.OpposingServe);
+    }
+
+    public void SetGameType(int gameTypeID)
+    {
+        currentGameType = (GameTypeID)gameTypeID;
+        ResetLethalSpeed();
+    }
+
+    public void SetPlayersAmount(int playersAmountID)
+    {
+        foreach (PlayerController player in players)
+        {
+            player.gameObject.SetActive(false);
+        }
+
+        switch (playersAmountID)
+        {
+            case 0:
+                players[0].gameObject.SetActive(true);
+                players[2].gameObject.SetActive(true);
+
+                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                break;
+            case 1:
+                foreach (PlayerController player in players)
+                {
+                    player.gameObject.SetActive(true);
+                }
+
+                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
+                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
+                break;
+            case 2:
+                players[0].gameObject.SetActive(true);
+                players[1].gameObject.SetActive(true);
+                players[2].gameObject.SetActive(true);
+
+                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
+                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                break;
+            case 3:
+                players[0].gameObject.SetActive(true);
+                players[2].gameObject.SetActive(true);
+                players[3].gameObject.SetActive(true);
+
+                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
+                break;
+        }
     }
 
     public void SetCourt(int courtID)
@@ -174,11 +243,27 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
         courtRenderer.material = courts[courtID].tennisCourtMaterial;
         ballSpeedModifier = courts[courtID].ballSpeedModifier;
         playerSpeedModifier = courts[courtID].playerSpeedModifier;
+    }
 
-        if (MainUI.Instance.settingsMenu.activeInHierarchy)
+    public void SetTotalBallSpeedModifier()
+    {
+        totalBallSpeedModifier = ballSpeedModifier * lethalModeSpeedModifier; 
+    }
+
+    public void IncrementLethalSpeed()
+    {
+        if (currentGameType != GameTypeID.Lethal)
         {
-            MainUI.Instance.SettingsMenu();
+            return;
         }
+        lethalModeSpeedModifier += 0.2f;
+        SetTotalBallSpeedModifier();
+    }
+
+    public void ResetLethalSpeed()
+    {
+        lethalModeSpeedModifier = 1;
+        SetTotalBallSpeedModifier();
     }
 }
 
@@ -195,6 +280,12 @@ public enum PlayerID
     Player3,
     Player4,
 }
+
+public enum GameTypeID
+{
+    Normal = 0,
+    Lethal = 1,
+}   
 
 [Serializable]
 public class CourtStage

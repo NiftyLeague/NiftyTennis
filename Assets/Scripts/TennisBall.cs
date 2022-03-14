@@ -18,21 +18,6 @@ public class TennisBall : MonoBehaviour
     private bool curveBall;
     private float xCurveMultiplier;
     private float xCurve;
-    public float XCurve {
-        get 
-        { 
-            return xCurve; 
-        }
-        set
-        {
-            xCurve = Mathf.Clamp(value, -1.0f, 1.0f);
-        }
-    }
-
-    private void Start()
-    {
-        ResetBall(PlayerID.Player1);
-    }
 
     private void FixedUpdate()
     {
@@ -65,9 +50,15 @@ public class TennisBall : MonoBehaviour
 
     public void HitBall(HitBy hitBy, HitType hitType = HitType.Serving, float hitPower = 1)
     {
+        if (ballState == BallState.Ground)
+        {
+            return;
+        }   
+
         Utilities.Instance.PlayHitStop();
         transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
         holdFollow = null;
+        TennisMatchManager.Instance.IncrementLethalSpeed();
         ballState = BallState.Moving;
         TennisMatchManager.Instance.ballBouncedOnCourt = false;
         trail.emitting = true;
@@ -77,7 +68,7 @@ public class TennisBall : MonoBehaviour
         lastHitBy = hitBy;
         lastHitXDirection = 0;
         displayBallAnimator.Play("Normal Hit", 0, 0.2f);
-        displayBallAnimator.speed = TennisMatchManager.Instance.ballSpeedModifier;
+        displayBallAnimator.speed = TennisMatchManager.Instance.totalBallSpeedModifier;
         float servingBonusDirection = 0.4f;
 
         switch (hitBy)
@@ -133,14 +124,14 @@ public class TennisBall : MonoBehaviour
 
         trail.startColor = ballTrailColor;
         trail.endColor = ballTrailColor;
-        speed = (5 * hitPower) * TennisMatchManager.Instance.ballSpeedModifier;
+        speed = (5 * hitPower) * TennisMatchManager.Instance.totalBallSpeedModifier;
 
         Instantiate(hitParticlePrefab, transform.position, transform.rotation);
     }
 
     public void ResetBall(PlayerID serving)
     {
-        displayBallAnimator.speed = TennisMatchManager.Instance.ballSpeedModifier * 2;
+        displayBallAnimator.speed = TennisMatchManager.Instance.totalBallSpeedModifier * 2;
         displayBallAnimator.Play("Normal Bounce", 0, 0);
         rigidbody.velocity = Vector3.zero;
         trail.emitting = false;
