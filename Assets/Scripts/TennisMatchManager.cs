@@ -40,7 +40,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 }
                 else
                 {
-                    MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce!", Color.white);
+                    MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce On Court!", Color.white);
                 }
                 if (team1CurrentScore > 3 && team2CurrentScore < 3)
                 {
@@ -59,7 +59,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 }
                 else
                 {
-                    MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce!", Color.white);
+                    MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce On Court!", Color.white);
                 }
                 if (team2CurrentScore > 3 && team1CurrentScore < 3)
                 {
@@ -166,7 +166,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
         switch (servingTeam)
         {
             case TeamID.team1:
-                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
                 GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
                 GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
                 GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
@@ -176,7 +176,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
             case TeamID.team2:
                 GetPlayer(PlayerID.Player1).SetState(PlayState.OpposingServe);
                 GetPlayer(PlayerID.Player2).SetState(PlayState.OpposingServe);
-                GetPlayer(PlayerID.Player3).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player3).SetState(PlayState.ServingMove);
                 GetPlayer(PlayerID.Player4).SetState(PlayState.SameTeamAsServe);
                 tennisBall.ResetBall(PlayerID.Player3);
                 MainUI.Instance.PlayDisplayMessage("Team 2 Serves!", Color.green);
@@ -203,7 +203,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 players[0].gameObject.SetActive(true);
                 players[2].gameObject.SetActive(true);
 
-                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
                 GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
                 break;
             case 1:
@@ -212,7 +212,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                     player.gameObject.SetActive(true);
                 }
 
-                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
                 GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
                 GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
                 GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
@@ -222,7 +222,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 players[1].gameObject.SetActive(true);
                 players[2].gameObject.SetActive(true);
 
-                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
                 GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
                 GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
                 break;
@@ -231,7 +231,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 players[2].gameObject.SetActive(true);
                 players[3].gameObject.SetActive(true);
 
-                GetPlayer(PlayerID.Player1).SetState(PlayState.Serving);
+                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
                 GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
                 GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
                 break;

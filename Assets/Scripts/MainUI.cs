@@ -13,6 +13,8 @@ public class MainUI : Singleton<MainUI>
     public GameObject displayMessage;
     public ServingBarUI servingBar;
 
+    private InputState input = new InputState();
+
     private void Start()
     {
         OpenSettingsMenu();
@@ -20,7 +22,10 @@ public class MainUI : Singleton<MainUI>
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        var device = InputReader.Device.Gamepad1;
+        InputReader.GetInput(device, input);
+
+        if (input.PressedStart)
         {
             OpenSettingsMenu();
         }

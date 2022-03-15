@@ -8,6 +8,7 @@ public class BallHitter : MonoBehaviour
     public float hitPower = 1.0f;
     public PlayerController playerController;
     public Renderer renderer;
+    public BallHitAimer ballHitAimer;
     private float canHitTimer;
     private HitType currentHitType = HitType.Normal;
 
@@ -55,7 +56,7 @@ public class BallHitter : MonoBehaviour
     {
         if (other.CompareTag("Ball"))
         {
-            other.GetComponent<TennisBall>().HitBall(belongsToPlayer, currentHitType, hitPower + playerController.chargePower);
+            other.GetComponent<TennisBall>().HitBall(playerController.lastMoveXAxis, ballHitAimer.transform, belongsToPlayer, currentHitType, hitPower + playerController.chargePower);
             playerController.HitBall();
         }
     }

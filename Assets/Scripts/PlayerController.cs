@@ -8,7 +8,6 @@ public class PlayerController : MonoBehaviour
     public PlayState playState;
     public Rigidbody rigidBody;
     public BallHitter ballHitter;
-    public float moveSpeed;
     private float moveSpeedMultiplier = 1;
     private float dashTimer;
     private float dashCooldown;
@@ -18,6 +17,7 @@ public class PlayerController : MonoBehaviour
     public float chargePower = 0;
     public ParticleSystem chargeParticle;
     public Transform ballServePosition;
+    public Transform regularBallAimerLookat;
     public ServingPosition playerServeStartPosition;
     [Space]
     public SpriteRenderer spriteRenderer;
@@ -31,27 +31,26 @@ public class PlayerController : MonoBehaviour
     private int spriteAboutToHitBallAnimationCurrent = -1;
     [HideInInspector] public bool isHittingBall;
     [HideInInspector] public bool isAboutToHitBall;
+    [HideInInspector] public float lastMoveXAxis;
     public bool secondPlayerInTeam;
+    private InputState input = new InputState();
+    private Vector2 moveInput;
 
     void FixedUpdate()
     {
         //MOVE INPUT
-        Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        if (playState == PlayState.Serving)
-        {
-            input = new Vector2(Input.GetAxis("Horizontal"), 0);
-        }
 
-        var normal = input.normalized;
-        var magnitude = input.magnitude;
+
+        var normal = moveInput.normalized;
+        var magnitude = moveInput.magnitude;
 
         magnitude = Mathf.Clamp01(magnitude);
-        input = normal * magnitude;
+        moveInput = normal * magnitude;
         Vector3 movement = Vector3.zero;
-        movement = new Vector3(input.x, 0.0f, input.y);
-        spriteRenderer.flipX = Input.GetAxis("Horizontal") > 0 ? false : true;
+        movement = new Vector3(moveInput.x, 0.0f, moveInput.y);
+        spriteRenderer.flipX = input.xAxis > 0 ? false : true;
 
-        float moveSpeedWithModifier = moveSpeed * TennisMatchManager.Instance.playerSpeedModifier;
+        float moveSpeedWithModifier = 4.5f * TennisMatchManager.Instance.playerSpeedModifier;
 
         if (dashTimer > 0)
         {
@@ -127,6 +126,23 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        var device = InputReader.Device.Any;
+        InputReader.GetInput(device, input);
+
+        //Move Input
+        moveInput = new Vector2(input.xAxis, input.yAxis);
+        lastMoveXAxis = moveInput.x;
+
+        if (playState == PlayState.ServingMove)
+        {
+            moveInput = new Vector2(input.xAxis, 0);
+        }
+
+        if (playState == PlayState.Serving)
+        {
+            moveInput = new Vector2(0, 0);
+        }
+
         dashCooldown -= Time.deltaTime;
         dashKeypressTimer -= Time.deltaTime;
 
@@ -136,25 +152,25 @@ public class PlayerController : MonoBehaviour
         }
 
         // DASH INPUTS
-        if (Input.GetKeyDown(KeyCode.UpArrow))
+        if (input.PressedUp)
         {
             DashAttempt(LastDashKeyPressed.Up);
         }
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (input.PressedDown)
         {
             DashAttempt(LastDashKeyPressed.Down);
         }
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (input.PressedLeft)
         {
             DashAttempt(LastDashKeyPressed.Left);
         }
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (input.PressedRight)
         {
             DashAttempt(LastDashKeyPressed.Right);
         }
 
         // BALL HIT INPUTS
-        if (Input.GetKeyDown(KeyCode.X))
+        if (input.PressedB)
         {
             ballHitter.TurnOnHitter(HitType.Weak);
             chargePower = -0.8f;
@@ -162,17 +178,49 @@ public class PlayerController : MonoBehaviour
 
         var chargeParticleEmission = chargeParticle.emission;
 
-        if (Input.GetKey(KeyCode.Z))
+        if (input.PressedA)
+        {
+            if (playState == PlayState.ServingMove)
+            {
+                SetState(PlayState.Serving);
+            }
+        }
+
+        if (input.ReleasedA)
+        {
+            if (playState == PlayState.Serving)
+            {
+                if (chargePower > 0.25f)
+                {
+                    ballHitter.TurnOnHitter(HitType.Hard);
+                }
+                else
+                {
+                    ballHitter.TurnOnHitter();
+                }
+
+                playerServeStartPosition.gameObject.SetActive(false);
+                MainUI.Instance.servingBar.gameObject.SetActive(false);
+            }
+        }
+
+        if (input.aButton)
         {
             chargePower += Time.deltaTime;
             if (chargePower > 0.25f)
             {
-                ballHitter.TurnOnHitter(HitType.Hard);
+                if (playState == PlayState.Playing)
+                {
+                    ballHitter.TurnOnHitter(HitType.Hard);
+                }
                 chargeParticleEmission.rateOverTime = chargePower * 500;
             }
             else
             {
-                ballHitter.TurnOnHitter();
+                if (playState == PlayState.Playing)
+                {
+                    ballHitter.TurnOnHitter();
+                }
             }
 
             if (chargePower > 1.0f)
@@ -185,7 +233,6 @@ public class PlayerController : MonoBehaviour
             chargePower = 0;
             chargeParticleEmission.rateOverTime = 0;
         }
-        
     }
 
     public void DashAttempt(LastDashKeyPressed keyPress)
@@ -204,7 +251,7 @@ public class PlayerController : MonoBehaviour
 
     public void Dash()
     {
-        if (dashCooldown > 0)
+        if (dashCooldown > 0 || playState == PlayState.Serving)
         {
             return;
         }
@@ -237,30 +284,30 @@ public class PlayerController : MonoBehaviour
 
     public void SetState(PlayState playStateToSet)
     {
+        ballHitter.ballHitAimer.target = regularBallAimerLookat;
+
         switch (playStateToSet)
         {
             case PlayState.Playing:
-                playerServeStartPosition.gameObject.SetActive(false);
-                MainUI.Instance.servingBar.gameObject.SetActive(false);
+
                 break;
-            case PlayState.Serving:
+            case PlayState.ServingMove:
                 playerServeStartPosition.SetServingPosition();
                 transform.position = playerServeStartPosition.GetStartPosition(false).position;
-                MainUI.Instance.servingBar.UpdateBar(transform);
+                ballHitter.ballHitAimer.target = playerServeStartPosition.GetAimerLookatPosition(false);
                 TennisMatchManager.Instance.tennisBall.ResetBall(playerID);
                 break;
+            case PlayState.Serving:
+                ballHitter.ballHitAimer.target = playerServeStartPosition.GetAimerLookatPosition(false);
+                MainUI.Instance.servingBar.UpdateBar(transform);
+                break;
             case PlayState.OpposingServe:
-                if (secondPlayerInTeam)
-                {
-                    transform.position = playerServeStartPosition.GetStartPosition(false).position;
-                }
-                else
-                {
-                    transform.position = playerServeStartPosition.GetStartPosition(true).position;
-                }
+                transform.position = secondPlayerInTeam ? playerServeStartPosition.GetStartPosition(false).position : playerServeStartPosition.GetStartPosition(true).position;
+                playStateToSet = PlayState.Playing;
                 break;
             case PlayState.SameTeamAsServe:
                 transform.position = playerServeStartPosition.GetStartPosition(true).position;
+                playStateToSet = PlayState.Playing;
                 break;
         }
 
@@ -271,6 +318,7 @@ public class PlayerController : MonoBehaviour
 public enum PlayState
 {
     Playing,
+    ServingMove,
     Serving,
     SameTeamAsServe,
     OpposingServe,

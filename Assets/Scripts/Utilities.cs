@@ -29,7 +29,7 @@ public class Utilities : Singleton<Utilities>
     IEnumerator HitStop()
     {
         Time.timeScale = 0.05f;
-        yield return new WaitForSeconds(0.02f);
+        yield return new WaitForSeconds(0.01f);
         Time.timeScale = 1;
         CameraShake();
     }

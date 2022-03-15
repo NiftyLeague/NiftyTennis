@@ -8,6 +8,8 @@ public class ServingPosition : MonoBehaviour
     public GameObject rightSideWallColliders;
     public Transform leftSideStart;
     public Transform rightSideStart;
+    public Transform leftSideBallAimerLookat;
+    public Transform rightSideBallAimerLookat;
 
     public void SetServingPosition()
     {
@@ -30,5 +32,19 @@ public class ServingPosition : MonoBehaviour
             newStartPosition = TennisMatchManager.Instance.leftSideServe ? leftSideStart : rightSideStart;
         }
         return newStartPosition;
+    }
+
+    public Transform GetAimerLookatPosition(bool reverseIt)
+    {
+        Transform newBallAimerLookat = transform;
+        if (reverseIt)
+        {
+            newBallAimerLookat = TennisMatchManager.Instance.leftSideServe ? rightSideBallAimerLookat : leftSideBallAimerLookat;
+        }
+        else
+        {
+            newBallAimerLookat = TennisMatchManager.Instance.leftSideServe ? leftSideBallAimerLookat : rightSideBallAimerLookat;
+        }
+        return newBallAimerLookat;
     }
 }
