@@ -22,6 +22,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     [Space]
     public List<CourtStage> courts;
     public Renderer courtRenderer;
+    public int currentPlayersAmountID;
     public float ballSpeedModifier = 1;
     public float playerSpeedModifier = 1;
     [Space]
@@ -166,22 +167,16 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
         switch (servingTeam)
         {
             case TeamID.team1:
-                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
-                GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
-                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
-                GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
                 tennisBall.ResetBall(PlayerID.Player1);
                 MainUI.Instance.PlayDisplayMessage("Team 1 Serves!", Color.green);
                 break;
             case TeamID.team2:
-                GetPlayer(PlayerID.Player1).SetState(PlayState.OpposingServe);
-                GetPlayer(PlayerID.Player2).SetState(PlayState.OpposingServe);
-                GetPlayer(PlayerID.Player3).SetState(PlayState.ServingMove);
-                GetPlayer(PlayerID.Player4).SetState(PlayState.SameTeamAsServe);
                 tennisBall.ResetBall(PlayerID.Player3);
                 MainUI.Instance.PlayDisplayMessage("Team 2 Serves!", Color.green);
                 break;
         }
+
+        SetUpPlayers(servingTeam);
     }
 
     public void SetGameType(int gameTypeID)
@@ -197,43 +192,113 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
             player.gameObject.SetActive(false);
         }
 
-        switch (playersAmountID)
+        currentPlayersAmountID = playersAmountID;
+        SetUpPlayers(TeamID.team1);
+    }
+
+    void SetUpPlayers(TeamID servingTeam)
+    {
+        List<Transform> playersToAddToCamera = new List<Transform>();
+        switch (currentPlayersAmountID)
         {
             case 0:
                 players[0].gameObject.SetActive(true);
                 players[2].gameObject.SetActive(true);
 
-                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
-                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                playersToAddToCamera.Add(players[0].transform);
+                playersToAddToCamera.Add(players[2].transform);
+                MainUI.Instance.mainCamera.AddPlayersToCamera(playersToAddToCamera, new Vector3(0, -1, 0));
+
+                if (servingTeam == TeamID.team1)
+                {
+                    GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
+                    GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                }
+                else
+                {
+                    GetPlayer(PlayerID.Player1).SetState(PlayState.OpposingServe);
+                    GetPlayer(PlayerID.Player3).SetState(PlayState.ServingMove);
+                }
+
+                players[0].SetCourtSide(true);
+                players[2].SetCourtSide(true);
                 break;
             case 1:
+                if (servingTeam == TeamID.team1)
+                {
+                    GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
+                    GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
+                    GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                    GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
+                }
+                else
+                {
+                    GetPlayer(PlayerID.Player1).SetState(PlayState.OpposingServe);
+                    GetPlayer(PlayerID.Player2).SetState(PlayState.OpposingServe);
+                    GetPlayer(PlayerID.Player3).SetState(PlayState.ServingMove);
+                    GetPlayer(PlayerID.Player4).SetState(PlayState.SameTeamAsServe);
+                }
+
                 foreach (PlayerController player in players)
                 {
                     player.gameObject.SetActive(true);
+                    player.SetCourtSide(false);
+                    playersToAddToCamera.Add(player.transform);
                 }
-
-                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
-                GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
-                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
-                GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
+                MainUI.Instance.mainCamera.AddPlayersToCamera(playersToAddToCamera, new Vector3(0,-1,0));
                 break;
             case 2:
                 players[0].gameObject.SetActive(true);
                 players[1].gameObject.SetActive(true);
                 players[2].gameObject.SetActive(true);
 
-                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
-                GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
-                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                playersToAddToCamera.Add(players[0].transform);
+                playersToAddToCamera.Add(players[1].transform);
+                playersToAddToCamera.Add(players[2].transform);
+                MainUI.Instance.mainCamera.AddPlayersToCamera(playersToAddToCamera, new Vector3(0, 0, 0));
+
+                if (servingTeam == TeamID.team1)
+                {
+                    GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
+                    GetPlayer(PlayerID.Player2).SetState(PlayState.SameTeamAsServe);
+                    GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                }
+                else
+                {
+                    GetPlayer(PlayerID.Player1).SetState(PlayState.OpposingServe);
+                    GetPlayer(PlayerID.Player2).SetState(PlayState.OpposingServe);
+                    GetPlayer(PlayerID.Player3).SetState(PlayState.ServingMove);
+                }
+
+                players[0].SetCourtSide(false);
+                players[1].SetCourtSide(false);
+                players[2].SetCourtSide(true);
                 break;
             case 3:
                 players[0].gameObject.SetActive(true);
                 players[2].gameObject.SetActive(true);
                 players[3].gameObject.SetActive(true);
 
-                GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
-                GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
-                GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
+                playersToAddToCamera.Add(players[0].transform);
+                playersToAddToCamera.Add(players[2].transform);
+                playersToAddToCamera.Add(players[3].transform);
+                MainUI.Instance.mainCamera.AddPlayersToCamera(playersToAddToCamera, new Vector3(0, -2, 0));
+                if (servingTeam == TeamID.team1)
+                {
+                    GetPlayer(PlayerID.Player1).SetState(PlayState.ServingMove);
+                    GetPlayer(PlayerID.Player3).SetState(PlayState.OpposingServe);
+                    GetPlayer(PlayerID.Player4).SetState(PlayState.OpposingServe);
+                }
+                else
+                {
+                    GetPlayer(PlayerID.Player1).SetState(PlayState.OpposingServe);
+                    GetPlayer(PlayerID.Player3).SetState(PlayState.ServingMove);
+                    GetPlayer(PlayerID.Player4).SetState(PlayState.SameTeamAsServe);
+                }
+
+                players[0].SetCourtSide(true);
+                players[2].SetCourtSide(false);
+                players[3].SetCourtSide(false);
                 break;
         }
     }

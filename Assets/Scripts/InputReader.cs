@@ -22,6 +22,7 @@ public static class InputReader
 
 	static HashSet<Device> gamepadsInUse = new HashSet<Device>();
 	static float deadZone = 0.5f;
+	static float keyboardAxisMove = 1f;
 	static bool haveInitialized;
 
 	public static void GetFrameInput(Device device, InputState inputState)
@@ -185,24 +186,27 @@ public static class InputReader
 	{
 		bool usingKbAxis = false;
 
+		inputState.xAxis = 0;
+		inputState.yAxis = 0;
+
 		if (Input.GetKey(kbLeft))
 		{
-			inputState.xAxis -= 1f;
+			inputState.xAxis -= keyboardAxisMove;
 			usingKbAxis = true;
 		}
 		if (Input.GetKey(kbRight))
 		{
-			inputState.xAxis += 1f;
+			inputState.xAxis += keyboardAxisMove;
 			usingKbAxis = true;
 		}
 		if (Input.GetKey(kbUp))
 		{
-			inputState.yAxis += 1f;
+			inputState.yAxis += keyboardAxisMove;
 			usingKbAxis = true;
 		}
 		if (Input.GetKey(kbDown))
 		{
-			inputState.yAxis -= 1f;
+			inputState.yAxis -= keyboardAxisMove;
 			usingKbAxis = true;
 		}
 
@@ -252,21 +256,25 @@ public static class InputReader
 	static void GetKeyboardInput(InputState inputState)
 	{
 		inputState.xAxis = inputState.yAxis = inputState.leftTrigger = inputState.rightTrigger = 0f;
+
+		inputState.xAxis = 0;
+		inputState.yAxis = 0;
+
 		if (Input.GetKey(kbLeft))
 		{
-			inputState.xAxis -= 1f;
+			inputState.xAxis -= keyboardAxisMove;
 		}
 		if (Input.GetKey(kbRight))
 		{
-			inputState.xAxis += 1f;
+			inputState.xAxis += keyboardAxisMove;
 		}
 		if (Input.GetKey(kbUp))
 		{
-			inputState.yAxis += 1f;
+			inputState.yAxis += keyboardAxisMove;
 		}
 		if (Input.GetKey(kbDown))
 		{
-			inputState.yAxis -= 1f;
+			inputState.yAxis -= keyboardAxisMove;
 		}
 
 		inputState.up = Input.GetKey(kbUp);

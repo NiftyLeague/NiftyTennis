@@ -23,6 +23,9 @@ TextureImporter:
   - first:
       213: 8978969524479216725
     second: testsprite running_6
+  - first:
+      213: -9137031058061954383
+    second: testsprite running_7
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -266,6 +269,27 @@ TextureImporter:
       bones: []
       spriteID: 55c44abb535bb9c70800000000000000
       internalID: 8978969524479216725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: testsprite running_7
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1b2718aa9aeb23180800000000000000
+      internalID: -9137031058061954383
       vertices: []
       indices: 
       edges: []

@@ -12,6 +12,8 @@ public class MainUI : Singleton<MainUI>
     public TextMeshProUGUI displayMessageText;
     public GameObject displayMessage;
     public ServingBarUI servingBar;
+    public ServingSignUI servingSign;
+    public CameraBehaviour mainCamera;
 
     private InputState input = new InputState();
 

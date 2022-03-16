@@ -64,7 +64,7 @@ public class TennisBall : MonoBehaviour
             return;
         }
 
-        Debug.Log(hitType);
+        //Debug.Log(hitType);
         Utilities.Instance.PlayHitStop();
         transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
         holdFollow = null;
@@ -77,8 +77,7 @@ public class TennisBall : MonoBehaviour
         xCurveMultiplier = 0;
         lastHitBy = hitBy;
         lastHitXDirection = 0;
-        displayBallAnimator.Play("Normal Hit", 0, 0.2f);
-        displayBallAnimator.speed = TennisMatchManager.Instance.totalBallSpeedModifier;
+        displayBallAnimator.Play("Normal Bounce", 0, 0.2f);
         transform.rotation = hitAimerDirection.rotation;
         transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0);
         float moveXAxis = Mathf.Clamp(lastMoveXAxis, -1.0f, 1.0f);
@@ -120,6 +119,7 @@ public class TennisBall : MonoBehaviour
         trail.startColor = ballTrailColor;
         trail.endColor = ballTrailColor;
         speed = (6 * hitPower) * TennisMatchManager.Instance.totalBallSpeedModifier;
+        displayBallAnimator.speed = hitPower * TennisMatchManager.Instance.totalBallSpeedModifier;
 
         Instantiate(hitParticlePrefab, transform.position, transform.rotation);
     }
@@ -128,12 +128,17 @@ public class TennisBall : MonoBehaviour
     {
         lastHitBy = HitBy.None;
         displayBallAnimator.speed = 2.5f * TennisMatchManager.Instance.totalBallSpeedModifier;
-        displayBallAnimator.Play("Normal Bounce", 0, 0);
+        displayBallAnimator.Play("Serve Hold", 0, 0);
         rigidbody.velocity = Vector3.zero;
         trail.emitting = false;
         lastHitXDirection = 0;
         ballState = BallState.Held;
         holdFollow = TennisMatchManager.Instance.GetPlayer(serving).ballServePosition;
+    }
+
+    public void ServeBall()
+    {
+        displayBallAnimator.Play("Normal Bounce", 0, 0);
     }
 
     public void DeadBall()
