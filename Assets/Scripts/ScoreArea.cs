@@ -10,7 +10,7 @@ public class ScoreArea : MonoBehaviour
     {
         if (other.CompareTag("Ball"))
         {
-            TennisMatchManager.Instance.Score(teamThisScoresTo);
+            TennisMatchManager.Instance.Score(teamThisScoresTo, ScoreType.HitScoreArea);
         }
     }
 }

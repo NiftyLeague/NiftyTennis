@@ -28,6 +28,7 @@ public class ServingBarUI : MonoBehaviour
     public void UpdateBar(Transform playerPosition)
     {
         playerAssignedTo = playerPosition;
+        transform.position = playerAssignedTo.position + positionOffset;
         gameObject.SetActive(true);
     }
 }

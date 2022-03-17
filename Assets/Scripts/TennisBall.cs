@@ -16,6 +16,7 @@ public class TennisBall : MonoBehaviour
     public Transform displayBallLookatTarget;
 
     private Transform holdFollow;
+    private PlayerController servingPlayer;
     private float lastHitXDirection;
     private bool curveBall;
     private float xCurveMultiplier;
@@ -64,24 +65,9 @@ public class TennisBall : MonoBehaviour
             return;
         }
 
+        MainUI.Instance.servingBar.gameObject.SetActive(false);
         //Debug.Log(hitType);
-        Utilities.Instance.PlayHitStop();
-        transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
-        holdFollow = null;
-        TennisMatchManager.Instance.IncrementLethalSpeed();
-        ballState = BallState.Moving;
-        TennisMatchManager.Instance.ballBouncedOnCourt = false;
-        trail.emitting = true;
-        curveBall = false;
-        xCurve = 0;
-        xCurveMultiplier = 0;
-        lastHitBy = hitBy;
-        lastHitXDirection = 0;
-        displayBallAnimator.Play("Normal Bounce", 0, 0.2f);
-        transform.rotation = hitAimerDirection.rotation;
-        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0);
         float moveXAxis = Mathf.Clamp(lastMoveXAxis, -1.0f, 1.0f);
-
         if (hitType == HitType.Serving)
         {
             lastHitXDirection = moveXAxis * 0.25f;
@@ -91,6 +77,23 @@ public class TennisBall : MonoBehaviour
             lastHitXDirection = moveXAxis * 0.5f;
         }
 
+        Utilities.Instance.PlayHitStop();
+        transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
+        holdFollow = null;
+        ballState = BallState.Moving;
+        TennisMatchManager.Instance.IncrementLethalSpeed();
+        TennisMatchManager.Instance.servingPositionTeam1.SetActive(false);
+        TennisMatchManager.Instance.servingPositionTeam2.SetActive(false);
+        MainUI.Instance.servingSign.gameObject.SetActive(false);
+        TennisMatchManager.Instance.ballBouncedOnCourt = false;
+        trail.emitting = true;
+        curveBall = false;
+        xCurve = 0;
+        xCurveMultiplier = 0;
+        lastHitBy = hitBy;
+        displayBallAnimator.Play("Normal Bounce", 0, 0.2f);
+        transform.rotation = hitAimerDirection.rotation;
+        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0);
         Color ballTrailColor = Color.yellow;
 
         switch (hitType)
@@ -119,7 +122,7 @@ public class TennisBall : MonoBehaviour
         trail.startColor = ballTrailColor;
         trail.endColor = ballTrailColor;
         speed = (6 * hitPower) * TennisMatchManager.Instance.totalBallSpeedModifier;
-        displayBallAnimator.speed = hitPower * TennisMatchManager.Instance.totalBallSpeedModifier;
+        displayBallAnimator.speed = (1.25f * hitPower) * TennisMatchManager.Instance.totalBallSpeedModifier;
 
         Instantiate(hitParticlePrefab, transform.position, transform.rotation);
     }
@@ -133,12 +136,13 @@ public class TennisBall : MonoBehaviour
         trail.emitting = false;
         lastHitXDirection = 0;
         ballState = BallState.Held;
-        holdFollow = TennisMatchManager.Instance.GetPlayer(serving).ballServePosition;
+        servingPlayer = TennisMatchManager.Instance.GetPlayer(serving);
+        holdFollow = servingPlayer.ballServePosition;
     }
 
     public void ServeBall()
     {
-        displayBallAnimator.Play("Normal Bounce", 0, 0);
+        displayBallAnimator.Play("Normal Bounce", 0, 0.1f);
     }
 
     public void DeadBall()
@@ -152,6 +156,16 @@ public class TennisBall : MonoBehaviour
     public void BallBounce()
     {
         Instantiate(hitParticlePrefab, displayBall.transform.position, transform.rotation);
+        if (servingPlayer == null)
+        {
+            return;
+        }
+        if (servingPlayer.playState == PlayState.Serving)
+        {
+            TennisMatchManager.Instance.Score(TeamID.team1, ScoreType.DroppedDuringServe);
+            MainUI.Instance.servingSign.gameObject.SetActive(false);
+            MainUI.Instance.servingBar.gameObject.SetActive(false);
+        }
     }
 }
 

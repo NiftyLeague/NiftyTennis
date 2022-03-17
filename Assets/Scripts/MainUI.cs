@@ -6,6 +6,7 @@ using TMPro;
 public class MainUI : Singleton<MainUI>
 {
     public GameObject settingsMenu;
+    public GameObject howToPlayMenu;
     [Space]
     public TextMeshProUGUI currentScoreText;
     public TextMeshProUGUI mainScoreText;
@@ -51,6 +52,16 @@ public class MainUI : Singleton<MainUI>
         UpdateScores();
         PlayDisplayMessage("Team 1 Serves!", Color.green);
         CloseSettingsMenu();
+    }
+
+    public void HowToPlayButton()
+    {
+        howToPlayMenu.SetActive(true);
+    }
+
+    public void HowToPlayBackButton()
+    {
+        howToPlayMenu.SetActive(false);
     }
 
     public void QuitButton()

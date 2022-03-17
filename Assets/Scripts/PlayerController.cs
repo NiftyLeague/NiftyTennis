@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
     public GameObject dashParticlePrefab;
     private float moveSpeedMultiplier = 1;
     private float dashTimer;
-    private float dashCooldown;
+    [HideInInspector] public float dashCooldown;
     private float dashKeypressTimer;
     private LastDashKeyPressed lastDashKeyPressed = LastDashKeyPressed.None;
     public float dashPower = 4;
@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour
     public ParticleSystem chargeParticle;
     public Transform ballServePosition;
     public Transform regularBallAimerLookat;
+    public GameObject dashCooldownBar;
     public ServingPosition playerServeStartPosition;
     [Space]
     public SpriteRenderer spriteRenderer;
@@ -106,7 +107,6 @@ public class PlayerController : MonoBehaviour
                 if (playState == PlayState.ServingMove)
                 {
                     SetState(PlayState.Serving);
-                    MainUI.Instance.servingSign.gameObject.SetActive(false);
                 }
             }
 
@@ -122,9 +122,6 @@ public class PlayerController : MonoBehaviour
                     {
                         ballHitter.TurnOnHitter();
                     }
-
-                    playerServeStartPosition.gameObject.SetActive(false);
-                    MainUI.Instance.servingBar.gameObject.SetActive(false);
                 }
             }
 
@@ -260,7 +257,6 @@ public class PlayerController : MonoBehaviour
         if (magnitude > 0 || magnitude < 0)
         {
             spriteAnimationTimer -= Time.deltaTime * TennisMatchManager.Instance.playerSpeedModifier;
-
             if (spriteAnimationTimer <= 0)
             {
                 spriteRunAnimationCurrent++;
@@ -268,12 +264,12 @@ public class PlayerController : MonoBehaviour
                 {
                     spriteRunAnimationCurrent = 0;
                 }
-                spriteAnimationTimer = 0.1f;
-                if (moveInput.y > 0)
+                spriteAnimationTimer = 0.05f;
+                if (input.up)
                 {
                     spriteRenderer.sprite = runningUpSprites[spriteRunAnimationCurrent];
                 }
-                else if (moveInput.y < 0)
+                else if (input.down)
                 {
                     spriteRenderer.sprite = runningDownSprites[spriteRunAnimationCurrent];
                 }
@@ -325,10 +321,10 @@ public class PlayerController : MonoBehaviour
         var newDashParticle = Instantiate(dashParticlePrefab, transform.position, transform.rotation);
         newDashParticle.transform.eulerAngles = new Vector3(0, dashDirection);
         lastDashKeyPressed = LastDashKeyPressed.None;
-        dashCooldown = 0.75f;
+        dashCooldown = 1f;
+        dashCooldownBar.SetActive(true);
         dashTimer = 0.15f;
         dashKeypressTimer = 0;
-
     }
 
     public void HitBall()
@@ -371,6 +367,7 @@ public class PlayerController : MonoBehaviour
             case PlayState.Serving:
                 ballHitter.ballHitAimer.target = playerServeStartPosition.GetAimerLookatPosition(false);
                 TennisMatchManager.Instance.tennisBall.ServeBall();
+                MainUI.Instance.servingSign.gameObject.SetActive(false);
                 MainUI.Instance.servingBar.UpdateBar(transform);
                 break;
             case PlayState.OpposingServe:

@@ -19,6 +19,8 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     [HideInInspector] public bool ballBouncedOnCourt = false;
     [HideInInspector] public bool leftSideServe = true;
     [HideInInspector] public TeamID servingTeam = TeamID.team1;
+    public GameObject servingPositionTeam1;
+    public GameObject servingPositionTeam2;
     [Space]
     public List<CourtStage> courts;
     public Renderer courtRenderer;
@@ -27,51 +29,63 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     public float playerSpeedModifier = 1;
     [Space]
     public float lethalModeSpeedModifier = 1;
-    [HideInInspector] public float totalBallSpeedModifier = 1; 
+    [HideInInspector] public float totalBallSpeedModifier = 1;
 
-    public void Score(TeamID teamID)
+    public void Score(TeamID teamID, ScoreType scoreType)
     {
-        switch (teamID)
+        switch (scoreType)
         {
-            case TeamID.team1:
-                if (ballBouncedOnCourt)
+            case ScoreType.HitScoreArea:
+                switch (teamID)
                 {
-                    team1CurrentScore++;
-                    MainUI.Instance.PlayDisplayMessage("Team 1 Scores!", Color.cyan);
-                }
-                else
-                {
-                    MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce On Court!", Color.white);
-                }
-                if (team1CurrentScore > 3 && team2CurrentScore < 3)
-                {
-                    team1MainScore++;
-                    ChangeServingTeam();
-                    MainUI.Instance.PlayDisplayMessage("Game, Set, Match: Team 1!", Color.yellow);
-                    team1CurrentScore = 0;
-                    team2CurrentScore = 0;
+                    case TeamID.team1:
+                        if (ballBouncedOnCourt)
+                        {
+                            team1CurrentScore++;
+                            MainUI.Instance.PlayDisplayMessage("Team 1 Scores!", Color.cyan);
+                        }
+                        else
+                        {
+                            MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce On Court...", Color.white);
+                        }
+                        if (team1CurrentScore > 3 && team2CurrentScore < 3)
+                        {
+                            team1MainScore++;
+                            ChangeServingTeam();
+                            MainUI.Instance.PlayDisplayMessage("Game, Set, Match: Team 1!", Color.yellow);
+                            team1CurrentScore = 0;
+                            team2CurrentScore = 0;
+                        }
+                        break;
+                    case TeamID.team2:
+                        if (ballBouncedOnCourt)
+                        {
+                            team2CurrentScore++;
+                            MainUI.Instance.PlayDisplayMessage("Team 2 Scores!", Color.cyan);
+                        }
+                        else
+                        {
+                            MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce On Court...", Color.white);
+                        }
+                        if (team2CurrentScore > 3 && team1CurrentScore < 3)
+                        {
+                            team2MainScore++;
+                            ChangeServingTeam();
+                            MainUI.Instance.PlayDisplayMessage("Game, Set, Match: Team 2!", Color.yellow);
+                            team1CurrentScore = 0;
+                            team2CurrentScore = 0;
+                        }
+                        break;
                 }
                 break;
-            case TeamID.team2:
-                if (ballBouncedOnCourt)
-                {
-                    team2CurrentScore++;
-                    MainUI.Instance.PlayDisplayMessage("Team 2 Scores!", Color.cyan);
-                }
-                else
-                {
-                    MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce On Court!", Color.white);
-                }
-                if (team2CurrentScore > 3 && team1CurrentScore < 3)
-                {
-                    team2MainScore++;
-                    ChangeServingTeam();
-                    MainUI.Instance.PlayDisplayMessage("Game, Set, Match: Team 2!", Color.yellow);
-                    team1CurrentScore = 0;
-                    team2CurrentScore = 0;
-                }
+            case ScoreType.HitNet:
+                MainUI.Instance.PlayDisplayMessage("Hit The Net...", Color.white);
+                break;
+            case ScoreType.DroppedDuringServe:
+                MainUI.Instance.PlayDisplayMessage("Dropped The Ball...", Color.white);
                 break;
         }
+        
 
         if (team1CurrentScore == 4 && team2CurrentScore == 4)
         {
@@ -350,7 +364,14 @@ public enum GameTypeID
 {
     Normal = 0,
     Lethal = 1,
-}   
+}
+
+public enum ScoreType
+{
+    HitScoreArea,
+    HitNet,
+    DroppedDuringServe,
+}
 
 [Serializable]
 public class CourtStage
