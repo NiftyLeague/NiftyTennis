@@ -10,6 +10,7 @@ public class MainUI : Singleton<MainUI>
     [Space]
     public TextMeshProUGUI currentScoreText;
     public TextMeshProUGUI mainScoreText;
+    public TextMeshProUGUI lethalBallSpeedText;
     public TextMeshProUGUI displayMessageText;
     public GameObject displayMessage;
     public ServingBarUI servingBar;
@@ -25,7 +26,7 @@ public class MainUI : Singleton<MainUI>
 
     private void Update()
     {
-        var device = InputReader.Device.Gamepad1;
+        var device = InputReader.Device.Any;
         InputReader.GetInput(device, input);
 
         if (input.PressedStart)
@@ -49,7 +50,7 @@ public class MainUI : Singleton<MainUI>
     public void StartNewGame()
     {
         TennisMatchManager.Instance.ResetScores();
-        UpdateScores();
+        UpdateTexts();
         PlayDisplayMessage("Team 1 Serves!", Color.green);
         CloseSettingsMenu();
     }
@@ -69,10 +70,13 @@ public class MainUI : Singleton<MainUI>
         Application.Quit();
     }
 
-    public void UpdateScores()
+    public void UpdateTexts()
     {
-        currentScoreText.text = TennisMatchManager.Instance.team1CurrentScoreString + TennisMatchManager.Instance.team2CurrentScoreString;
-        mainScoreText.text = TennisMatchManager.Instance.team1MainScore + "-" + TennisMatchManager.Instance.team2MainScore;
+        TennisMatchManager tennisManager = TennisMatchManager.Instance;
+        currentScoreText.text = tennisManager.team1CurrentScoreString + tennisManager.team2CurrentScoreString;
+        mainScoreText.text = tennisManager.team1MainScore + "-" + tennisManager.team2MainScore;
+        lethalBallSpeedText.gameObject.SetActive(tennisManager.currentGameType == GameTypeID.Lethal ? true : false);
+        lethalBallSpeedText.text = "Ball Speed: " + tennisManager.tennisBall.speed.ToString("0.0") + " MPH";
     }
 
     public void PlayDisplayMessage(string displayMessageString, Color textColor)

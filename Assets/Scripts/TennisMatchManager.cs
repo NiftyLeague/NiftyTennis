@@ -105,7 +105,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
 
         ResetLethalSpeed();
         tennisBall.DeadBall();
-        MainUI.Instance.UpdateScores();
+        MainUI.Instance.UpdateTexts();
         StartCoroutine(NextRoundStarting());
     }
 

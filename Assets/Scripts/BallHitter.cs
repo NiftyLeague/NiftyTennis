@@ -7,7 +7,6 @@ public class BallHitter : MonoBehaviour
     public HitBy belongsToPlayer;
     public float hitPower = 1.0f;
     public PlayerController playerController;
-    public Renderer renderer;
     public BallHitAimer ballHitAimer;
     private float canHitTimer;
     private HitType currentHitType = HitType.Normal;
@@ -36,27 +35,13 @@ public class BallHitter : MonoBehaviour
         canHitTimer = 0.8f;
         currentHitType = hitType;
         playerController.ReadyToHitBall();
-
-        switch (hitType)
-        {
-            case HitType.Serving:
-            case HitType.Normal:
-                renderer.material.color = Color.white;
-                break;
-            case HitType.Hard:
-                renderer.material.color = Color.red;
-                break;
-            case HitType.Weak:
-                renderer.material.color = Color.blue;
-                break;
-        }
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Ball"))
         {
-            other.GetComponent<TennisBall>().HitBall(playerController.lastMoveXAxis, ballHitAimer.transform, belongsToPlayer, currentHitType, hitPower + playerController.chargePower);
+            other.GetComponent<TennisBall>().HitBall(playerController.lastMoveXAxis, playerController.lastMoveYAxis, ballHitAimer.transform, belongsToPlayer, currentHitType, hitPower + playerController.chargePower);
             playerController.HitBall();
         }
     }

@@ -17,7 +17,7 @@ public static class InputReader
 	static KeyCode kbB = KeyCode.X;
 	static KeyCode kbX = KeyCode.C;
 	static KeyCode kbY = KeyCode.V;
-	static KeyCode kbStart = KeyCode.Return;
+	static KeyCode kbStart = KeyCode.Escape;
 	static KeyCode kbLeftShoulder = KeyCode.Tab;
 
 	static HashSet<Device> gamepadsInUse = new HashSet<Device>();
