@@ -7,7 +7,7 @@ public class TennisBall : MonoBehaviour
     public Animator displayBallAnimator;
     public Rigidbody rigidbody;
     public Transform displayBall;
-    public HitBy lastHitBy = HitBy.Opponent;
+    public TeamID lastHitBy = TeamID.None;
     public BallState ballState = BallState.Held;
     public TrailRenderer trail;
     public SpriteRenderer ballShadow;
@@ -22,7 +22,7 @@ public class TennisBall : MonoBehaviour
     private bool curveBall;
     private float xCurveMultiplier;
     private float xCurve;
-    private bool canBeHit = true;
+    [HideInInspector] public bool canBeHit = true;
 
     private void FixedUpdate()
     {
@@ -55,7 +55,7 @@ public class TennisBall : MonoBehaviour
         displayBallParent.LookAt(displayBallLookatTarget);
     }
 
-    public void HitBall(float lastMoveXAxis, float lastMoveYAxis, Transform hitAimerDirection, HitBy hitBy, HitType hitType = HitType.Serving, float hitPower = 1)
+    public void HitBall(float lastMoveXAxis, float lastMoveYAxis, Transform hitAimerDirection, TeamID hitBy, HitType hitType = HitType.Serving, float hitPower = 1)
     {
         if (ballState == BallState.Ground)
         {
@@ -85,7 +85,7 @@ public class TennisBall : MonoBehaviour
             lastHitXDirection = moveXAxis * 0.4f;
         }
 
-        Utilities.Instance.PlayHitStop();
+        Utilities.Instance.PlayHitStop(hitPower);
         transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
         holdFollow = null;
         ballState = BallState.Moving;
@@ -99,13 +99,17 @@ public class TennisBall : MonoBehaviour
         xCurve = 0;
         xCurveMultiplier = 0;
         lastHitBy = hitBy;
-        if (moveYAxis > 0.5f || moveYAxis < -0.5f)
+        if (moveYAxis > 0.5f)
         {
-            displayBallAnimator.Play("Topspin", 0, 0.2f);
+            displayBallAnimator.Play("Lob", 0, 0.2f);
             if (hitType != HitType.Hard)
             {
-                hitType = HitType.Topspin;
+                hitType = HitType.Lob;
             }
+        }
+        else if (moveYAxis < -0.5f)
+        {
+            displayBallAnimator.Play("Drop", 0, 0.2f);
         }
         else
         {
@@ -127,12 +131,15 @@ public class TennisBall : MonoBehaviour
                 break;
             case HitType.Normal:
                 ballTrailColor = Color.yellow;
+                TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
                 break;
             case HitType.Hard:
                 ballTrailColor = Color.red;
+                TennisMatchManager.Instance.IncrementSpecial(lastHitBy, -2);
                 break;
-            case HitType.Topspin:
+            case HitType.Lob:
                 ballTrailColor = Color.blue;
+                TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
                 //hitPower = 0.75f;
                 //curveBall = true;
                 break;
@@ -150,7 +157,7 @@ public class TennisBall : MonoBehaviour
 
     public void ResetBall(PlayerID serving)
     {
-        lastHitBy = HitBy.None;
+        lastHitBy = TeamID.None;
         displayBallAnimator.speed = 2.5f * TennisMatchManager.Instance.totalBallSpeedModifier;
         displayBallAnimator.Play("Serve Hold", 0, 0);
         rigidbody.velocity = Vector3.zero;
@@ -169,6 +176,7 @@ public class TennisBall : MonoBehaviour
 
     public void DeadBall()
     {
+        CannotBeHit();
         rigidbody.velocity = Vector3.zero;
         trail.emitting = false;
         ballState = BallState.Ground;
@@ -210,19 +218,13 @@ public class TennisBall : MonoBehaviour
     }
 }
 
-public enum HitBy
-{
-    None,
-    Player,
-    Opponent,
-}
-
 public enum HitType
 {
     Serving,
     Normal,
     Hard,
-    Topspin,
+    Lob,
+    Drop,
 }
 
 public enum BallState

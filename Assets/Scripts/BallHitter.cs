@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class BallHitter : MonoBehaviour
 {
-    public HitBy belongsToPlayer;
     public float hitPower = 1.0f;
     public PlayerController playerController;
     public BallHitAimer ballHitAimer;
@@ -16,15 +15,15 @@ public class BallHitter : MonoBehaviour
         if (canHitTimer > 0)
         {
             canHitTimer -= Time.deltaTime;
-            if (canHitTimer <= 0)
+            if (canHitTimer < 0)
             {
                 playerController.UnReady();
-                gameObject.SetActive(false);
+                TurnOffHitter();
             }
         }
     }
 
-    public void TurnOnHitter(HitType hitType = HitType.Normal)
+    public void TurnOnHitter(HitType hitType = HitType.Normal, bool isPerformingAnotherAction = false)
     {
         if (playerController.playState == PlayState.Serving)
         {
@@ -32,17 +31,30 @@ public class BallHitter : MonoBehaviour
         }
 
         gameObject.SetActive(true);
-        canHitTimer = 0.8f;
         currentHitType = hitType;
+
+        if (isPerformingAnotherAction)
+        {
+            return;
+        }
+
+        canHitTimer = 0.8f;
         playerController.ReadyToHitBall();
+    }
+
+    void TurnOffHitter()
+    {
+        canHitTimer = 0;
+        gameObject.SetActive(false);
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Ball"))
         {
-            other.GetComponent<TennisBall>().HitBall(playerController.lastMoveXAxis, playerController.lastMoveYAxis, ballHitAimer.transform, belongsToPlayer, currentHitType, hitPower + playerController.chargePower);
+            other.GetComponent<TennisBall>().HitBall(playerController.lastMoveXAxis, playerController.lastMoveYAxis, ballHitAimer.transform, playerController.teamID, currentHitType, hitPower + playerController.chargePower);
             playerController.HitBall();
+            TurnOffHitter();
         }
     }
 }

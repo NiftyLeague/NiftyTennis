@@ -11,6 +11,8 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     public int team2CurrentScore = 0;
     public string team1CurrentScoreString = "0";
     public string team2CurrentScoreString = "0";
+    public int team1Special;
+    public int team2Special;
     [Space]
     public List<PlayerController> players;
     [HideInInspector] public GameTypeID currentGameType = GameTypeID.Normal;
@@ -344,10 +346,40 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
         lethalModeSpeedModifier = 1;
         SetTotalBallSpeedModifier();
     }
+
+    public void IncrementSpecial(TeamID teamID, int amount)
+    {
+        if (currentGameType == GameTypeID.Classic)
+        {
+            return;
+        }
+
+        switch (teamID)
+        {
+            case TeamID.team1:
+                team1Special += amount;
+                team1Special = Mathf.Clamp(team1Special, 0, 10);
+                break;
+            case TeamID.team2:
+                team2Special += amount;
+                team2Special = Mathf.Clamp(team2Special, 0, 10);
+                break;
+        }
+
+        MainUI.Instance.UpdateTexts();
+    }
+
+    public void ResetSpecials()
+    {
+        team1Special = 0;
+        team2Special = 0;
+        MainUI.Instance.UpdateTexts();
+    }
 }
 
 public enum TeamID
 {
+    None,
     team1,
     team2,
 }
@@ -363,7 +395,8 @@ public enum PlayerID
 public enum GameTypeID
 {
     Normal = 0,
-    Lethal = 1,
+    Classic = 1,
+    Lethal = 2,
 }
 
 public enum ScoreType

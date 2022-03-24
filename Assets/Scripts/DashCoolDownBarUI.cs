@@ -12,10 +12,11 @@ public class DashCoolDownBarUI : MonoBehaviour
     private void Update()
     {
         transform.position = playerAssignedTo.transform.position + positionOffset;
-        dashBar.fillAmount = playerAssignedTo.dashCooldown / 1;
-        if (playerAssignedTo.dashCooldown <= 0)
+        dashBar.fillAmount = playerAssignedTo.actionCooldown / 1;
+        if (playerAssignedTo.actionCooldown <= 0)
         {
             gameObject.SetActive(false);
+            playerAssignedTo.CanMoveAgain();
         }
     }
 }
