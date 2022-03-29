@@ -78,14 +78,17 @@ public class TennisBall : MonoBehaviour
 
         if (hitType == HitType.Serving)
         {
-            lastHitXDirection = moveXAxis * 0.2f;
+            lastHitXDirection = moveXAxis * 0.1f;
         }
         else
         {
-            lastHitXDirection = moveXAxis * 0.4f;
+            lastHitXDirection = moveXAxis * 0.3f;
         }
 
-        Utilities.Instance.PlayHitStop(hitPower);
+        if (hitType == HitType.Charge)
+        {
+            Utilities.Instance.PlayHitStop(hitPower);
+        }
         transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
         holdFollow = null;
         ballState = BallState.Moving;
@@ -99,17 +102,15 @@ public class TennisBall : MonoBehaviour
         xCurve = 0;
         xCurveMultiplier = 0;
         lastHitBy = hitBy;
-        if (moveYAxis > 0.5f)
+        if (moveYAxis > 0.5f && hitType != HitType.Charge)
         {
             displayBallAnimator.Play("Lob", 0, 0.2f);
-            if (hitType != HitType.Hard)
-            {
-                hitType = HitType.Lob;
-            }
+            hitType = HitType.Lob;
         }
-        else if (moveYAxis < -0.5f)
+        else if (moveYAxis < -0.5f && hitType != HitType.Charge)
         {
             displayBallAnimator.Play("Drop", 0, 0.2f);
+            hitType = HitType.Drop;
         }
         else
         {
@@ -133,15 +134,18 @@ public class TennisBall : MonoBehaviour
                 ballTrailColor = Color.yellow;
                 TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
                 break;
-            case HitType.Hard:
+            case HitType.Charge:
                 ballTrailColor = Color.red;
                 TennisMatchManager.Instance.IncrementSpecial(lastHitBy, -2);
                 break;
             case HitType.Lob:
                 ballTrailColor = Color.blue;
                 TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
-                //hitPower = 0.75f;
-                //curveBall = true;
+                break;
+            case HitType.Drop:
+                ballTrailColor = Color.magenta;
+                TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
+                hitPower = 1.5f;
                 break;
         }
 
@@ -222,7 +226,7 @@ public enum HitType
 {
     Serving,
     Normal,
-    Hard,
+    Charge,
     Lob,
     Drop,
 }

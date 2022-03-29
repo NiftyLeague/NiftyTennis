@@ -39,7 +39,7 @@ public class BallHitter : MonoBehaviour
         }
 
         canHitTimer = 0.8f;
-        playerController.ReadyToHitBall();
+        playerController.ReadyToHitBall(hitType);
     }
 
     void TurnOffHitter()

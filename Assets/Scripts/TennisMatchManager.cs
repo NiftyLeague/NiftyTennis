@@ -23,6 +23,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     [HideInInspector] public TeamID servingTeam = TeamID.team1;
     public GameObject servingPositionTeam1;
     public GameObject servingPositionTeam2;
+    public List<BounceChecker> courtSideBoundaries;
     [Space]
     public List<CourtStage> courts;
     public Renderer courtRenderer;
@@ -215,6 +216,11 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     void SetUpPlayers(TeamID servingTeam)
     {
         List<Transform> playersToAddToCamera = new List<Transform>();
+        foreach (BounceChecker boundary in courtSideBoundaries)
+        {
+            boundary.outsideOfCourt = false;
+        }
+
         switch (currentPlayersAmountID)
         {
             case 0:
@@ -236,8 +242,13 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                     GetPlayer(PlayerID.Player3).SetState(PlayState.ServingMove);
                 }
 
-                players[0].SetCourtSide(true);
-                players[2].SetCourtSide(true);
+                players[0].SetCourtSide(false);
+                players[2].SetCourtSide(false);
+
+                foreach (BounceChecker boundary in courtSideBoundaries)
+                {
+                    boundary.outsideOfCourt = true;
+                }
                 break;
             case 1:
                 if (servingTeam == TeamID.team1)

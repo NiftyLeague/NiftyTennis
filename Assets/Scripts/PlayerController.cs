@@ -17,12 +17,13 @@ public class PlayerController : MonoBehaviour
     private float moveSpeedMultiplier = 1;
     private float diveTimer;
     [HideInInspector] public float actionCooldown;
+    [HideInInspector] public float actionCooldownToSet;
     private float divePower = 0;
     [HideInInspector] public float chargePower = 0;
     public ParticleSystem chargeParticle;
     public Transform ballServePosition;
     public Transform regularBallAimerLookat;
-    public GameObject swingCooldownBar;
+    //public GameObject swingCooldownBar;
     public ServingPosition playerServeStartPosition;
     public SpecialStars specialStars;
     [Space]
@@ -61,9 +62,21 @@ public class PlayerController : MonoBehaviour
     private float targetCPUSpeed;
     private float cpuServeTimer;
 
+    private void Start()
+    {
+        actionCooldownToSet = 0.4f;
+    }
+
     private void Update()
     {
-        actionCooldown -= Time.deltaTime;
+        if (actionCooldown > 0)
+        {
+            actionCooldown -= Time.deltaTime;
+            if (actionCooldown <= 0)
+            {
+                CanMoveAgain();
+            }
+        }
 
         if (controlledBy == ControlledBy.Player)
         {
@@ -151,7 +164,7 @@ public class PlayerController : MonoBehaviour
                 {
                     if (playState == PlayState.Playing)
                     {
-                        ballHitter.TurnOnHitter(HitType.Hard);
+                        ballHitter.TurnOnHitter(HitType.Charge);
                     }
                     chargeParticleEmission.rateOverTime = chargePower * 500;
                 }
@@ -186,6 +199,12 @@ public class PlayerController : MonoBehaviour
                     cpuServeTimer -= Time.deltaTime;
                     return;
                 }
+
+                if (ballHitter.gameObject.activeInHierarchy)
+                {
+                    return;
+                }
+
                 lastMoveXAxis = Random.Range(-1.0f, 1.0f);
                 ballHitter.TurnOnHitter();
             }
@@ -247,8 +266,8 @@ public class PlayerController : MonoBehaviour
             if (diveTimer <= 0)
             {
                 divingParticle.SetActive(false);
-                actionCooldown = 1;
-                swingCooldownBar.SetActive(true);
+                actionCooldown = actionCooldownToSet;
+                //swingCooldownBar.SetActive(true);
                 diveTimer = 0;
                 divePower = 0;
             }
@@ -427,10 +446,18 @@ public class PlayerController : MonoBehaviour
         SetState(PlayState.Playing);
     }
 
-    public void ReadyToHitBall()
+    public void ReadyToHitBall(HitType hitType)
     {
         isAboutToHitBall = true;
-        moveSpeedMultiplier = 0.0f;
+        if (hitType == HitType.Charge)
+        {
+            moveSpeedMultiplier = 0.5f;
+        }
+        else
+        {
+            moveSpeedMultiplier = 0.0f;
+        }
+        
     }
 
     public void UnReady()
@@ -443,22 +470,22 @@ public class PlayerController : MonoBehaviour
         isAboutToHitBall = false;
         spriteAboutToHitBallAnimationCurrent = -1;
         spriteAnimationTimer = 0;
-        swingCooldownBar.SetActive(true);
-        actionCooldown = 1;
+        //swingCooldownBar.SetActive(true);
+        actionCooldown = actionCooldownToSet;
     }
 
     public void CanMoveAgain()
     {
         actionCooldown = 0;
         moveSpeedMultiplier = 1.0f;
-        swingCooldownBar.SetActive(false);
+        //swingCooldownBar.SetActive(false);
     }
 
     public void EndJumping()
     {
         isJumping = false;
-        swingCooldownBar.SetActive(true);
-        actionCooldown = 1;
+        //swingCooldownBar.SetActive(true);
+        actionCooldown = actionCooldownToSet;
     }
 
     public void SetState(PlayState playStateToSet)
@@ -468,7 +495,10 @@ public class PlayerController : MonoBehaviour
         switch (playStateToSet)
         {
             case PlayState.Playing:
-                
+                if (TennisMatchManager.Instance.currentPlayersAmountID == 0)
+                {
+                    SetCourtSide(true);
+                }
                 break;
             case PlayState.ServingMove:
                 if (controlledBy == ControlledBy.CPU)
@@ -493,6 +523,7 @@ public class PlayerController : MonoBehaviour
                 actionCooldown = 0;
 
                 transform.position = secondPlayerInTeam ? playerServeStartPosition.GetStartPosition(false).position : playerServeStartPosition.GetStartPosition(true).position;
+
                 playStateToSet = PlayState.Playing;
                 break;
             case PlayState.SameTeamAsServe:
