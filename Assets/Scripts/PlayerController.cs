@@ -206,7 +206,11 @@ public class PlayerController : MonoBehaviour
                 }
 
                 lastMoveXAxis = Random.Range(-1.0f, 1.0f);
-                ballHitter.TurnOnHitter();
+                if (TennisMatchManager.Instance.ballBouncedOnCourt || playState == PlayState.ServingMove || playState == PlayState.Serving)
+                {
+                    Debug.Log("CAN HIT");
+                    ballHitter.TurnOnHitter();
+                }
             }
 
             if (courtSide == CourtSide.Both || courtSide == CourtSide.Left && tennisBallPositionForCPU.x < 0 || courtSide == CourtSide.Right && tennisBallPositionForCPU.x > 0)
@@ -231,7 +235,10 @@ public class PlayerController : MonoBehaviour
 
             currentCPUSpeed = Mathf.Lerp(currentCPUSpeed, targetCPUSpeed, 0.5f);
 
-            moveInput = new Vector2(currentCPUSpeed, 0);
+            if (playState != PlayState.ServingMove && playState != PlayState.Serving)
+            {
+                moveInput = new Vector2(currentCPUSpeed, 0);
+            }
         }
     }
     void FixedUpdate()
@@ -314,7 +321,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (isAboutToHitBall)
+        if (isAboutToHitBall || playState == PlayState.Serving)
         {
             spriteAnimationTimer -= Time.deltaTime * TennisMatchManager.Instance.playerSpeedModifier;
 
@@ -522,7 +529,14 @@ public class PlayerController : MonoBehaviour
             case PlayState.OpposingServe:
                 actionCooldown = 0;
 
-                transform.position = secondPlayerInTeam ? playerServeStartPosition.GetStartPosition(false).position : playerServeStartPosition.GetStartPosition(true).position;
+                if (teamID == TeamID.team1)
+                {
+                    transform.position = secondPlayerInTeam ? playerServeStartPosition.GetStartPosition(true).position : playerServeStartPosition.GetStartPosition(false).position;
+                }
+                else
+                {
+                    transform.position = secondPlayerInTeam ? playerServeStartPosition.GetStartPosition(false).position : playerServeStartPosition.GetStartPosition(true).position;
+                }
 
                 playStateToSet = PlayState.Playing;
                 break;

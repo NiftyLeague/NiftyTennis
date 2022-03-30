@@ -18,7 +18,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     [HideInInspector] public GameTypeID currentGameType = GameTypeID.Normal;
     [Space]
     public TennisBall tennisBall;
-    [HideInInspector] public bool ballBouncedOnCourt = false;
+    public bool ballBouncedOnCourt = false;
     [HideInInspector] public bool leftSideServe = true;
     [HideInInspector] public TeamID servingTeam = TeamID.team1;
     public GameObject servingPositionTeam1;

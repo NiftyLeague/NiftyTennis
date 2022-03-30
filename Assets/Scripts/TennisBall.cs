@@ -82,7 +82,15 @@ public class TennisBall : MonoBehaviour
         }
         else
         {
-            lastHitXDirection = moveXAxis * 0.3f;
+            if (TennisMatchManager.Instance.ballBouncedOnCourt)
+            {
+                lastHitXDirection = moveXAxis * 0.3f;
+            }
+            else
+            {
+                TennisMatchManager.Instance.Score(lastHitBy, ScoreType.HitScoreArea);
+                return;
+            }
         }
 
         if (hitType == HitType.Charge)
@@ -170,6 +178,7 @@ public class TennisBall : MonoBehaviour
         ballState = BallState.Held;
         servingPlayer = TennisMatchManager.Instance.GetPlayer(serving);
         holdFollow = servingPlayer.ballServePosition;
+        TennisMatchManager.Instance.ballBouncedOnCourt = false;
         CanBeHit();
     }
 

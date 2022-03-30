@@ -25,7 +25,7 @@ public class BallHitter : MonoBehaviour
 
     public void TurnOnHitter(HitType hitType = HitType.Normal, bool isPerformingAnotherAction = false)
     {
-        if (playerController.playState == PlayState.Serving)
+        if (playerController.playState == PlayState.Serving || playerController.playState == PlayState.ServingMove)
         {
             hitType = HitType.Serving;
         }
