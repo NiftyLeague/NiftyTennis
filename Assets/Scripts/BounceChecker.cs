@@ -35,6 +35,7 @@ public class BounceChecker : MonoBehaviour
                     }
                     else
                     {
+                        Debug.Log("bounce!");
                         TennisMatchManager.Instance.ballBouncedOnCourt = true;
                     }
                 }

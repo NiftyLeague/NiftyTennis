@@ -52,7 +52,7 @@ public class BallHitter : MonoBehaviour
     {
         if (other.CompareTag("Ball"))
         {
-            other.GetComponent<TennisBall>().HitBall(playerController.lastMoveXAxis, playerController.lastMoveYAxis, ballHitAimer.transform, playerController.teamID, currentHitType, hitPower + playerController.chargePower);
+            other.GetComponent<TennisBall>().HitBall(playerController.lastMoveXAxis, playerController.lastMoveYAxis, ballHitAimer.transform, playerController.teamID, currentHitType, hitPower + (playerController.chargePower * 2));
             playerController.HitBall();
             TurnOffHitter();
         }

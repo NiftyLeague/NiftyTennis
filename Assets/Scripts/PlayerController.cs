@@ -100,18 +100,19 @@ public class PlayerController : MonoBehaviour
             
             if (input.PressedB)
             {
-                if (isJumping || diveTimer > 0)
-                {
-                    return;
-                }
-                if (moveInput == Vector2.zero)
-                {
-                    Jump();
-                }
-                else
-                {
-                    Dive();
-                }
+                //if (isJumping || diveTimer > 0)
+                //{
+                //    return;
+                //}
+                //if (moveInput == Vector2.zero)
+                //{
+                //    Jump();
+                //}
+                //else
+                //{
+                //    Dive();
+                //}
+                ballHitter.TurnOnHitter();
             }
 
             var chargeParticleEmission = chargeParticle.emission;
@@ -137,21 +138,29 @@ public class PlayerController : MonoBehaviour
                     ballHitter.TurnOnHitter();
                     return;
                 }
+
+
             }
 
-            //if (input.ReleasedA)
-            //{
-            //    if (actionCooldown > 0)
-            //    {
-            //        return;
-            //    }
+            if (input.ReleasedA)
+            {
+                if (actionCooldown > 0 || diveTimer > 0)
+                {
+                    return;
+                }
 
+                if (Vector3.Distance(TennisMatchManager.Instance.tennisBall.transform.position, transform.position) > 1f)
+                {
+                    Debug.Log("DIVE");
+                    Dive();
+                    return;
+                }
 
-            //}
+            }
 
             if (input.aButton)
             {
-                if (actionCooldown > 0)
+                if (actionCooldown > 0 || diveTimer > 0)
                 {
                     return;
                 }
@@ -208,7 +217,6 @@ public class PlayerController : MonoBehaviour
                 lastMoveXAxis = Random.Range(-1.0f, 1.0f);
                 if (TennisMatchManager.Instance.ballBouncedOnCourt || playState == PlayState.ServingMove || playState == PlayState.Serving)
                 {
-                    Debug.Log("CAN HIT");
                     ballHitter.TurnOnHitter();
                 }
             }
@@ -260,6 +268,29 @@ public class PlayerController : MonoBehaviour
 
         if (diveTimer > 0)
         {
+            Vector3 tennisBallPosition = TennisMatchManager.Instance.tennisBall.transform.position;
+
+            float newXDirection = 0;
+            if (tennisBallPosition.x > transform.position.x)
+            {
+                newXDirection = 1f;
+            }
+            else if (tennisBallPosition.x < transform.position.x)
+            {
+                newXDirection = -1f;
+            }
+            float newYDirection = 0;
+            if (tennisBallPosition.z > transform.position.z)
+            {
+                newYDirection = 1f;
+            }
+            else if (tennisBallPosition.z < transform.position.z)
+            {
+                newYDirection = -1f;
+            }
+            lastMoveInput = new Vector3(newXDirection, 0, newYDirection);
+
+            Debug.Log("DIVING");
             Vector3 movementPosition = (lastMoveInput * (moveSpeedWithModifier * moveSpeedMultiplier)) * divePower;
             Vector3 characterPosition = transform.position;
             characterPosition += movementPosition;
@@ -286,7 +317,7 @@ public class PlayerController : MonoBehaviour
                 ballHitter.TurnOnHitter(HitType.Normal, true);
             }
 
-            lastMoveInput = movement;
+            //lastMoveInput = movement;
             Vector3 movementPosition = movement * (moveSpeedWithModifier * moveSpeedMultiplier);
             Vector3 characterPosition = transform.position;
             characterPosition += movementPosition;
@@ -390,41 +421,16 @@ public class PlayerController : MonoBehaviour
 
     public void Dive()
     {
-        if (!CheckIfCanUseAction(divingSpecialCost))
-        { 
-            return;
-        }
+        //if (!CheckIfCanUseAction(divingSpecialCost))
+        //{ 
+        //    return;
+        //}
 
-        Vector3 tennisBallPosition = TennisMatchManager.Instance.tennisBall.transform.position;
-
-        if (Vector3.Distance(tennisBallPosition, transform.position) < 5f)
-        {            
-            float newXDirection = 0;
-            if (tennisBallPosition.x > transform.position.x)
-            {
-                newXDirection = 1f;
-            }
-            else if (tennisBallPosition.x < transform.position.x)
-            {
-                newXDirection = -1f;
-            }
-            float newYDirection = 0;
-            if (tennisBallPosition.z > transform.position.z)
-            {
-                newYDirection = 1f;
-            }
-            else if (tennisBallPosition.z < transform.position.z)
-            {
-                newYDirection = -1f;
-            }
-            lastMoveInput = new Vector3(newXDirection, 0, newYDirection);
-        }
-
-        var newDashParticle = Instantiate(diveParticlePrefab, transform.position, transform.rotation);
-        float moveAxisForDashParticle = Mathf.Atan2(lastMoveXAxis, lastMoveYAxis) * 180 / Mathf.PI;
-        float pointerOffset = -180;
-        newDashParticle.transform.eulerAngles = new Vector3(0, moveAxisForDashParticle + pointerOffset, 0);
-        TennisMatchManager.Instance.IncrementSpecial(teamID, -divingSpecialCost);
+        //var newDashParticle = Instantiate(diveParticlePrefab, transform.position, transform.rotation);
+        //float moveAxisForDashParticle = Mathf.Atan2(lastMoveXAxis, lastMoveYAxis) * 180 / Mathf.PI;
+        //float pointerOffset = -180;
+        //newDashParticle.transform.eulerAngles = new Vector3(0, moveAxisForDashParticle + pointerOffset, 0);
+        //TennisMatchManager.Instance.IncrementSpecial(teamID, -divingSpecialCost);
 
         diveTimer = 0.5f;
         divePower = 2f;
@@ -462,7 +468,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            moveSpeedMultiplier = 0.0f;
+            //moveSpeedMultiplier = 0.0f;
         }
         
     }
@@ -532,10 +538,12 @@ public class PlayerController : MonoBehaviour
                 if (teamID == TeamID.team1)
                 {
                     transform.position = secondPlayerInTeam ? playerServeStartPosition.GetStartPosition(true).position : playerServeStartPosition.GetStartPosition(false).position;
+                    transform.position = transform.position + new Vector3(0, 0, -0.5f);
                 }
                 else
                 {
                     transform.position = secondPlayerInTeam ? playerServeStartPosition.GetStartPosition(false).position : playerServeStartPosition.GetStartPosition(true).position;
+                    transform.position = transform.position + new Vector3(0, 0, 0.5f);
                 }
 
                 playStateToSet = PlayState.Playing;

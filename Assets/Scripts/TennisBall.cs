@@ -8,6 +8,7 @@ public class TennisBall : MonoBehaviour
     public Rigidbody rigidbody;
     public Transform displayBall;
     public TeamID lastHitBy = TeamID.None;
+    public HitType lastHitType = HitType.Normal;
     public BallState ballState = BallState.Held;
     public TrailRenderer trail;
     public SpriteRenderer ballShadow;
@@ -75,21 +76,21 @@ public class TennisBall : MonoBehaviour
         MainUI.Instance.servingBar.gameObject.SetActive(false);
         float moveXAxis = Mathf.Clamp(lastMoveXAxis, -1.0f, 1.0f);
         float moveYAxis = Mathf.Clamp(lastMoveYAxis, -1.0f, 1.0f);
-
+        
         if (hitType == HitType.Serving)
         {
             lastHitXDirection = moveXAxis * 0.1f;
         }
         else
         {
-            if (TennisMatchManager.Instance.ballBouncedOnCourt)
+            if (!TennisMatchManager.Instance.ballBouncedOnCourt && lastHitType == HitType.Serving)
             {
-                lastHitXDirection = moveXAxis * 0.3f;
+                TennisMatchManager.Instance.Score(lastHitBy, ScoreType.ServeNeedsToBounceFirst);
+                return;
             }
             else
             {
-                TennisMatchManager.Instance.Score(lastHitBy, ScoreType.HitScoreArea);
-                return;
+                lastHitXDirection = moveXAxis * 0.3f;
             }
         }
 
@@ -97,6 +98,8 @@ public class TennisBall : MonoBehaviour
         {
             Utilities.Instance.PlayHitStop(hitPower);
         }
+
+        lastHitType = hitType;
         transform.position = new Vector3(transform.position.x, 0.8f, transform.position.z);
         holdFollow = null;
         ballState = BallState.Moving;
@@ -140,28 +143,30 @@ public class TennisBall : MonoBehaviour
                 break;
             case HitType.Normal:
                 ballTrailColor = Color.yellow;
-                TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
+                //TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
                 break;
             case HitType.Charge:
                 ballTrailColor = Color.red;
-                TennisMatchManager.Instance.IncrementSpecial(lastHitBy, -2);
+                //TennisMatchManager.Instance.IncrementSpecial(lastHitBy, -2);
                 break;
             case HitType.Lob:
                 ballTrailColor = Color.blue;
-                TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
+                //TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
                 break;
             case HitType.Drop:
                 ballTrailColor = Color.magenta;
-                TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
+                //TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
                 hitPower = 1.5f;
                 break;
         }
+
+        TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
 
         trail.startColor = ballTrailColor;
         trail.endColor = ballTrailColor;
         speed = (6 * hitPower) * TennisMatchManager.Instance.totalBallSpeedModifier;
         moveYAxis = moveYAxis * -1;
-        float yTiltSpeedModifier = 1 + (moveYAxis / 4);
+        float yTiltSpeedModifier = 1 + (moveYAxis / 8);
         displayBallAnimator.speed = (1.25f * hitPower) * (TennisMatchManager.Instance.totalBallSpeedModifier * yTiltSpeedModifier);
         MainUI.Instance.UpdateTexts();
         Instantiate(hitParticlePrefab, transform.position, transform.rotation);
@@ -213,6 +218,7 @@ public class TennisBall : MonoBehaviour
     public void BallBounce()
     {
         Instantiate(hitParticlePrefab, displayBall.transform.position, transform.rotation);
+        CanBeHit();
         if (servingPlayer == null)
         {
             return;

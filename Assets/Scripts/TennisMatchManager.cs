@@ -20,7 +20,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
     public TennisBall tennisBall;
     public bool ballBouncedOnCourt = false;
     [HideInInspector] public bool leftSideServe = true;
-    [HideInInspector] public TeamID servingTeam = TeamID.team1;
+    public TeamID servingTeam = TeamID.team1;
     public GameObject servingPositionTeam1;
     public GameObject servingPositionTeam2;
     public List<BounceChecker> courtSideBoundaries;
@@ -49,7 +49,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                         }
                         else
                         {
-                            MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce On Court...", Color.white);
+                            MainUI.Instance.PlayDisplayMessage("OUT!", Color.white);
                         }
                         if (team1CurrentScore > 3 && team2CurrentScore < 3)
                         {
@@ -68,7 +68,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                         }
                         else
                         {
-                            MainUI.Instance.PlayDisplayMessage("Ball Didn't Bounce On Court...", Color.white);
+                            MainUI.Instance.PlayDisplayMessage("OUT!", Color.white);
                         }
                         if (team2CurrentScore > 3 && team1CurrentScore < 3)
                         {
@@ -86,6 +86,9 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 break;
             case ScoreType.DroppedDuringServe:
                 MainUI.Instance.PlayDisplayMessage("Dropped The Ball...", Color.white);
+                break;
+            case ScoreType.ServeNeedsToBounceFirst:
+                MainUI.Instance.PlayDisplayMessage("Serve Needs To Bounce First!", Color.white);
                 break;
         }
         
@@ -167,6 +170,7 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
 
     void ChangeServingTeam()
     {
+        Debug.Log("Change Team");
         switch (servingTeam)
         {
             case TeamID.team1:
@@ -415,6 +419,7 @@ public enum ScoreType
     HitScoreArea,
     HitNet,
     DroppedDuringServe,
+    ServeNeedsToBounceFirst,
 }
 
 [Serializable]
