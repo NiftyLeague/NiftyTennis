@@ -113,20 +113,6 @@ public class TennisBall : MonoBehaviour
         xCurve = 0;
         xCurveMultiplier = 0;
         lastHitBy = hitBy;
-        if (moveYAxis > 0.5f && hitType != HitType.Charge)
-        {
-            displayBallAnimator.Play("Lob", 0, 0.2f);
-            hitType = HitType.Lob;
-        }
-        else if (moveYAxis < -0.5f && hitType != HitType.Charge)
-        {
-            displayBallAnimator.Play("Drop", 0, 0.2f);
-            hitType = HitType.Drop;
-        }
-        else
-        {
-            displayBallAnimator.Play("Normal Bounce", 0, 0.2f);
-        }
         transform.rotation = hitAimerDirection.rotation;
         transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0);
         Color ballTrailColor = Color.yellow;
@@ -140,22 +126,23 @@ public class TennisBall : MonoBehaviour
                     hitPower = 0.5f;
                 }
                 ballTrailColor = Color.yellow;
+                displayBallAnimator.Play("Normal Bounce", 0, 0.2f);
                 break;
             case HitType.Normal:
                 ballTrailColor = Color.yellow;
-                //TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
+                displayBallAnimator.Play("Normal Bounce", 0, 0.2f);
                 break;
             case HitType.Charge:
                 ballTrailColor = Color.red;
-                //TennisMatchManager.Instance.IncrementSpecial(lastHitBy, -2);
+                displayBallAnimator.Play("Normal Bounce", 0, 0.2f);
                 break;
             case HitType.Lob:
                 ballTrailColor = Color.blue;
-                //TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
+                displayBallAnimator.Play("Lob", 0, 0.2f);
                 break;
             case HitType.Drop:
                 ballTrailColor = Color.magenta;
-                //TennisMatchManager.Instance.IncrementSpecial(lastHitBy, 1);
+                displayBallAnimator.Play("Drop", 0, 0.2f);
                 hitPower = 1.5f;
                 break;
         }

@@ -34,7 +34,7 @@ public class PlayerController : MonoBehaviour
     public List<Sprite> runningDownSprites;
     public List<Sprite> readyToHitSprites;
     public List<Sprite> hittingBallSprites;
-    public List<Sprite> divingSprites;
+    //public List<Sprite> divingSprites;
     public List<Sprite> jumpingSprites;
     private float spriteAnimationTimer;
     private int spriteRunAnimationCurrent = -1;
@@ -57,14 +57,14 @@ public class PlayerController : MonoBehaviour
     private int divingSpecialCost = 2;
     private int jumpingSpecialCost = 1;
 
-    //CPU Related
+    //CPU Player Related
     private float currentCPUSpeed;
     private float targetCPUSpeed;
     private float cpuServeTimer;
 
     private void Start()
     {
-        actionCooldownToSet = 0.4f;
+        actionCooldownToSet = 0.2f;
     }
 
     private void Update()
@@ -97,22 +97,29 @@ public class PlayerController : MonoBehaviour
             {
                 moveInput = new Vector2(0, 0);
             }
-            
+
+            //if (input.ReleasedB)
+            //{
+            //    if (actionCooldown > 0 || diveTimer > 0)
+            //    {
+            //        return;
+            //    }
+
+            //    Dive();
+            //    //return;
+            //}
+
             if (input.PressedB)
             {
-                //if (isJumping || diveTimer > 0)
-                //{
-                //    return;
-                //}
-                //if (moveInput == Vector2.zero)
-                //{
-                //    Jump();
-                //}
-                //else
-                //{
-                //    Dive();
-                //}
-                ballHitter.TurnOnHitter();
+                float tiltYAxis = Mathf.Clamp(lastMoveYAxis, -1.0f, 1.0f);
+                if (tiltYAxis >= 0)
+                {
+                    ballHitter.TurnOnHitter(HitType.Lob);
+                }
+                else if (tiltYAxis < 0)
+                {
+                    ballHitter.TurnOnHitter(HitType.Drop);
+                }
             }
 
             var chargeParticleEmission = chargeParticle.emission;
@@ -138,24 +145,17 @@ public class PlayerController : MonoBehaviour
                     ballHitter.TurnOnHitter();
                     return;
                 }
-
-
             }
 
-            if (input.ReleasedA)
+            if (input.ReleasedA || input.ReleasedB)
             {
                 if (actionCooldown > 0 || diveTimer > 0)
                 {
                     return;
                 }
 
-                if (Vector3.Distance(TennisMatchManager.Instance.tennisBall.transform.position, transform.position) > 1f)
-                {
-                    Debug.Log("DIVE");
-                    Dive();
-                    return;
-                }
-
+                Dive();
+                return;
             }
 
             if (input.aButton)
@@ -215,10 +215,7 @@ public class PlayerController : MonoBehaviour
                 }
 
                 lastMoveXAxis = Random.Range(-1.0f, 1.0f);
-                if (TennisMatchManager.Instance.ballBouncedOnCourt || playState == PlayState.ServingMove || playState == PlayState.Serving)
-                {
-                    ballHitter.TurnOnHitter();
-                }
+                ballHitter.TurnOnHitter();
             }
 
             if (courtSide == CourtSide.Both || courtSide == CourtSide.Left && tennisBallPositionForCPU.x < 0 || courtSide == CourtSide.Right && tennisBallPositionForCPU.x > 0)
@@ -290,13 +287,12 @@ public class PlayerController : MonoBehaviour
             }
             lastMoveInput = new Vector3(newXDirection, 0, newYDirection);
 
-            Debug.Log("DIVING");
             Vector3 movementPosition = (lastMoveInput * (moveSpeedWithModifier * moveSpeedMultiplier)) * divePower;
             Vector3 characterPosition = transform.position;
             characterPosition += movementPosition;
             transform.position = characterPosition;
 
-            ballHitter.TurnOnHitter(HitType.Normal, true);
+            ballHitter.TurnOnHitter(ballHitter.currentHitType, true);
 
             diveTimer -= Time.deltaTime;
             divePower -= Time.deltaTime * 3f;
@@ -370,21 +366,21 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (divePower > 0)
-        {
-            spriteAnimationTimer -= Time.deltaTime * TennisMatchManager.Instance.playerSpeedModifier;
-            if (spriteAnimationTimer <= 0)
-            {
-                spriteDivingAnimationCurrent++;
-                if (spriteDivingAnimationCurrent >= divingSprites.Count)
-                {
-                    spriteDivingAnimationCurrent = 0;
-                }
-                spriteAnimationTimer = 0.05f;
-                spriteRenderer.sprite = divingSprites[spriteDivingAnimationCurrent];
-            }
-            return;
-        }
+        //if (divePower > 0)
+        //{
+        //    spriteAnimationTimer -= Time.deltaTime * TennisMatchManager.Instance.playerSpeedModifier;
+        //    if (spriteAnimationTimer <= 0)
+        //    {
+        //        spriteDivingAnimationCurrent++;
+        //        if (spriteDivingAnimationCurrent >= divingSprites.Count)
+        //        {
+        //            spriteDivingAnimationCurrent = 0;
+        //        }
+        //        spriteAnimationTimer = 0.05f;
+        //        spriteRenderer.sprite = divingSprites[spriteDivingAnimationCurrent];
+        //    }
+        //    return;
+        //}
 
         if (magnitude > 0 || magnitude < 0)
         {
@@ -431,6 +427,16 @@ public class PlayerController : MonoBehaviour
         //float pointerOffset = -180;
         //newDashParticle.transform.eulerAngles = new Vector3(0, moveAxisForDashParticle + pointerOffset, 0);
         //TennisMatchManager.Instance.IncrementSpecial(teamID, -divingSpecialCost);
+
+        Vector3 tennisBallPositionForDiving = TennisMatchManager.Instance.tennisBall.transform.position;
+        if (Vector3.Distance(tennisBallPositionForDiving, transform.position) > 1f && Vector3.Distance(tennisBallPositionForDiving, transform.position) < 4f)
+        {
+
+        }
+        else
+        {
+            return;
+        }
 
         diveTimer = 0.5f;
         divePower = 2f;

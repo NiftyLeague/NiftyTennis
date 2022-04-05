@@ -42,15 +42,8 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                 switch (teamID)
                 {
                     case TeamID.team1:
-                        if (ballBouncedOnCourt)
-                        {
-                            team1CurrentScore++;
-                            MainUI.Instance.PlayDisplayMessage("Team 1 Scores!", Color.cyan);
-                        }
-                        else
-                        {
-                            MainUI.Instance.PlayDisplayMessage("OUT!", Color.white);
-                        }
+                        team1CurrentScore++;
+                        MainUI.Instance.PlayDisplayMessage("Team 1 Scores!", Color.cyan);
                         if (team1CurrentScore > 3 && team2CurrentScore < 3)
                         {
                             team1MainScore++;
@@ -61,15 +54,8 @@ public class TennisMatchManager : Singleton<TennisMatchManager>
                         }
                         break;
                     case TeamID.team2:
-                        if (ballBouncedOnCourt)
-                        {
-                            team2CurrentScore++;
-                            MainUI.Instance.PlayDisplayMessage("Team 2 Scores!", Color.cyan);
-                        }
-                        else
-                        {
-                            MainUI.Instance.PlayDisplayMessage("OUT!", Color.white);
-                        }
+                        team2CurrentScore++;
+                        MainUI.Instance.PlayDisplayMessage("Team 2 Scores!", Color.cyan);
                         if (team2CurrentScore > 3 && team1CurrentScore < 3)
                         {
                             team2MainScore++;

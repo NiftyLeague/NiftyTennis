@@ -8,7 +8,7 @@ public class BallHitter : MonoBehaviour
     public PlayerController playerController;
     public BallHitAimer ballHitAimer;
     private float canHitTimer;
-    private HitType currentHitType = HitType.Normal;
+    [HideInInspector] public HitType currentHitType = HitType.Normal;
 
     private void Update()
     {
